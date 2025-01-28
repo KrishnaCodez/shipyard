@@ -1,11 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import * as Clerk from "@clerk/elements/common";
-import { SignIn, SignInButton } from "@clerk/nextjs";
-
-import Link from "next/link";
+import { SignIn } from "@clerk/nextjs";
 
 export default function Page() {
   return (
@@ -20,5 +15,3 @@ export default function Page() {
     </div>
   );
 }
-
-
