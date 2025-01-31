@@ -1,16 +1,17 @@
-import { Roles } from "@/utils/types";
-import { auth } from "@clerk/nextjs/server";
-import React from "react";
+import { checkOnboardingStatus } from "@/lib/auth";
+import { SessionSync } from "@/components/SessionSync";
 
-const page = () => {
-  const checkRole = async (role: Roles) => {
-    const { sessionClaims } = await auth();
-    return sessionClaims?.metadata.role === role;
-  };
+export default async function Dashboard() {
+  const { isOnboarded, redirect } = await checkOnboardingStatus();
 
-  console.log(checkRole("admin"));
+  if (!isOnboarded) {
+    console.log("User is not onboarded, redirecting to", redirect);
+  }
 
-  return <div className="bg-zinc-900">page</div>;
-};
-
-export default page;
+  return (
+    <>
+      <SessionSync />
+      <div>Protected Dashboard Content</div>
+    </>
+  );
+}

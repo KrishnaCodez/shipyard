@@ -33,8 +33,8 @@ const Navbar = () => {
       className={`w-full transition-all duration-300 backdrop-blur-sm bg-opacity-80 text-white z-50
       ${
         showNavbar
-          ? "fixed top-0 left-0 right-0 bg-black/20"
-          : "absolute top-0 left-0 right-0 bg-transparent"
+          ? "flexed top-0 left-0 right-0 bg-black/20"
+          : "flexed top-0 left-0 right-0 bg-transparent"
       }`}
     >
       <div className="">
