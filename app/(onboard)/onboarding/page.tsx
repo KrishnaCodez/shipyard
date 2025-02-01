@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export default async function OnboardingPage() {
   const { userId } = await auth();
@@ -12,7 +12,7 @@ export default async function OnboardingPage() {
     select: { onboarded: true },
   });
 
-  if (user?.onboarded) {
+  if (user?.onboarded || !user) {
     redirect("/member"); // or role-based redirect
   }
 

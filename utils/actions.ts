@@ -1,6 +1,6 @@
 "use server";
 
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { checkRole } from "@/utils/roles";
 import { clerkClient } from "@clerk/nextjs/server";
 

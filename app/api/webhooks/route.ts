@@ -1,10 +1,10 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
-  const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
+  const WEBHOOK_SECRET = process.env.SIGNING_SECRET;
 
   const headerPayload = await headers();
   const svix_id = headerPayload.get("svix-id");
@@ -32,31 +32,24 @@ export async function POST(req: Request) {
       const { id, image_url, first_name, last_name, email_addresses } =
         evt.data;
 
-      try {
-        const result = await prisma.user.upsert({
-          where: { clerkId: id },
-          update: {
-            image: image_url || "",
-            name:
-              [first_name, last_name].filter(Boolean).join(" ") || "Unknown",
+      await prisma.user.upsert({
+        where: { clerkId: id },
+        update: {
+          image: image_url || "",
+          name: [first_name, last_name].filter(Boolean).join(" ") || "Unknown",
 
-            email: email_addresses[0].email_address,
-          },
-          create: {
-            clerkId: id,
-            image: image_url || "",
-            name:
-              [first_name, last_name].filter(Boolean).join(" ") || "Unknown",
-            email: email_addresses[0].email_address,
-            role: "USER",
-            onboarded: false,
-          },
-        });
-
-        console.log("Database operation result:", result);
-      } catch (error) {
-        console.error("Prisma error:", error);
-      }
+          email: email_addresses[0].email_address,
+        },
+        create: {
+          clerkId: id,
+          image: image_url || "",
+          name: [first_name, last_name].filter(Boolean).join(" ") || "Unknown",
+          email: email_addresses[0].email_address,
+          role: "USER",
+          onboarded: false,
+        },
+      });
+      console.log("User created/updated");
     }
 
     return new Response("", { status: 200 });
