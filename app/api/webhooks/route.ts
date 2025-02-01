@@ -31,6 +31,7 @@ export async function POST(req: Request) {
     if (eventType === "user.created" || eventType === "user.updated") {
       const { id, image_url, first_name, last_name, email_addresses } =
         evt.data;
+      console.log("userId:", evt.data.id);
 
       await prisma.user.upsert({
         where: { clerkId: id },
