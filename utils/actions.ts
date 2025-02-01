@@ -1,7 +1,14 @@
 "use server";
 
+import { prisma } from "@/lib/prisma";
 import { checkRole } from "@/utils/roles";
 import { clerkClient } from "@clerk/nextjs/server";
+
+export async function getUser(userId: string) {
+  return prisma.user.findUnique({
+    where: { id: userId },
+  });
+}
 
 export async function setRole(formData: FormData) {
   const client = await clerkClient();

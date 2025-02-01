@@ -14,18 +14,69 @@ datasource db {
 }
 
 model User {
-  id    String @id @default(cuid())
-  image String
-  name  String
-  email String @unique
+  id                 String              @id @default(cuid())
+  clerkId            String?             @unique
+  image              String
+  name               String
+  email              String              @unique
   // password      String
+  personalDetails    PersonalDetails?
+  technicalProfile   TechnicalProfile?
+  projectPreferences ProjectPreferences?
+  role               Role                @default(USER)
+  onboarded          Boolean             @default(false)
+  notifications      Notification[]
+  upvotes            Upvote[]
+  products           Product[]
+  comments           Comment[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+}
 
-  notifications Notification[]
-  upvotes       Upvote[]
-  products      Product[]
-  comments      Comment[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+model PersonalDetails {
+  id             String      @id @default(cuid())
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String      @unique
+  university     String
+  department     String
+  degreeLevel    DegreeLevel
+  age            Int
+  phone          String?
+  bio            String?     @db.VarChar(200)
+  profilePicture String?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
+
+model TechnicalProfile {
+  id               String          @id @default(cuid())
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId           String          @unique
+  primarySkills    String[]
+  experienceLevel  ExperienceLevel
+  interests        String[]
+  preferredRoles   String[]
+  githubUrl        String?
+  linkedinUrl      String?
+  portfolioUrl     String?
+  toolsProficiency String[]
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+}
+
+model ProjectPreferences {
+  id                    String    @id @default(cuid())
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                String    @unique
+  projectTypes          String[]
+  weeklyAvailability    String
+  teamSizePreference    String
+  collaborationMode     String[]
+  pastProjects          String?
+  competitionGoals      String?
+  availabilityStartDate DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 }
 
 model Category {
@@ -130,4 +181,16 @@ enum NotificationType {
   COMMENT
   ACTIVATED
   REJECTED
+}
+
+enum DegreeLevel {
+  UNDERGRADUATE
+  GRADUATE
+  PHD
+}
+
+enum ExperienceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
 }
