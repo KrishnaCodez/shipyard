@@ -92,14 +92,14 @@ const SelectCommand = (props: SelectFieldProps) => {
 
           <FormControl>
             <Popover open={open} onOpenChange={setOpen}>
-              <PopoverTrigger asChild>
+              <PopoverTrigger className="w-full" asChild>
                 <Button
                   variant="outline"
                   role="combobox"
                   aria-expanded={open}
                   disabled={props.disabled}
                   className={cn(
-                    "w-full justify-between font-normal",
+                    "w-full  justify-between bg-background px-3 font-normal outline-offset-0 hover:bg-background focus-visible:border-ring focus-visible:outline-[3px] focus-visible:outline-ring/20",
                     props.cns?.input
                   )}
                 >
@@ -116,7 +116,10 @@ const SelectCommand = (props: SelectFieldProps) => {
                   <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-full p-0">
+              <PopoverContent
+                className="w-full min-w-[var(--radix-popper-anchor-width)] border-input p-0"
+                align="start"
+              >
                 <Command>
                   <CommandInput placeholder={`Search ${props.label}...`} />
                   <CommandList>
@@ -139,7 +142,11 @@ const SelectCommand = (props: SelectFieldProps) => {
                           >
                             {item.label}
                             {field.value === item.value && (
-                              <Check className="ml-auto h-4 w-4" />
+                              <Check
+                                size={16}
+                                strokeWidth={2}
+                                className="ml-auto"
+                              />
                             )}
                           </CommandItem>
                         ))

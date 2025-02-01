@@ -15,6 +15,7 @@ const fields: MagicField[] = [
     config: {
       name: "framework",
       label: "Framework",
+      className: "w-full border",
       placeholder: "Select a framework",
       validation: z.string().min(1, "Please select a framework"),
       options: () => [
@@ -31,6 +32,7 @@ const fields: MagicField[] = [
       name: "city",
       label: "City",
       placeholder: "Select a city",
+      className: "",
       validation: z.string().optional(),
       options: () => [],
       conditionalOptions: {
@@ -75,7 +77,10 @@ export default function FieldTest() {
     <div>
       <h1>Hey... You got it.</h1>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-8 w-full"
+        >
           {fields.map(({ config, RenderComponent }, i) => (
             <RenderComponent key={i} {...config} control={form.control} />
           ))}
