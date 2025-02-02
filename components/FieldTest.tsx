@@ -7,6 +7,7 @@ import CustomSelect from "./custom/select";
 import { z } from "zod";
 import SelectCommand from "./custom/SelectCommand";
 import { Button } from "./ui/button";
+import CustomDatePicker from "./custom/date-picker";
 
 const fields: MagicField[] = [
   {
@@ -47,6 +48,19 @@ const fields: MagicField[] = [
           return [];
         },
       },
+    },
+  },
+
+  {
+    type: "input",
+    RenderComponent: CustomDatePicker,
+    config: {
+      type: "input",
+      name: "firstName",
+      label: "First Name",
+      placeholder: "Enter your first name",
+      validation: z.string().min(2, "First name must be at least 2 characters"),
+      defaultValue: "",
     },
   },
 ];
