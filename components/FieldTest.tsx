@@ -5,9 +5,14 @@ import { Form } from "./ui/form";
 import { MagicField } from "@/utils/types";
 import CustomSelect from "./custom/select";
 import { z } from "zod";
-import SelectCommand from "./custom/SelectCommand";
+import SelectCommand from "./custom/select-command";
 import { Button } from "./ui/button";
 import CustomDatePicker from "./custom/date-picker";
+import CustomInput from "./custom/input";
+import CustomTextArea from "./custom/textarea";
+import PhoneNumberInput from "./custom/phone-input";
+import { AtSign } from "lucide-react";
+import MultiSelectCommand from "./custom/multiselect";
 
 const fields: MagicField[] = [
   {
@@ -61,6 +66,118 @@ const fields: MagicField[] = [
       placeholder: "Enter your first name",
       validation: z.string().min(2, "First name must be at least 2 characters"),
       defaultValue: "",
+    },
+  },
+
+  {
+    type: "input",
+    RenderComponent: CustomInput,
+    config: {
+      type: "text",
+      name: "checkinput",
+      label: "Check Name",
+      placeholder: "Enter your first name",
+      validation: z.string().min(2, "First name must be at least 2 characters"),
+      defaultValue: "",
+    },
+  },
+  {
+    type: "textarea",
+    RenderComponent: CustomTextArea,
+    config: {
+      cols: 10,
+      name: "message" as const,
+      label: "Message",
+      placeholder: "Message ",
+      validation: z.string().min(2, { message: "Message is required" }),
+      rows: 1,
+    },
+  },
+
+  {
+    type: "input",
+    RenderComponent: PhoneNumberInput,
+    config: {
+      type: "phone",
+      name: "checkinput",
+      label: "Check Name",
+      placeholder: "Enter your first name",
+      validation: z.string().min(2, "First name must be at least 2 characters"),
+      defaultValue: "",
+    },
+  },
+  {
+    type: "input",
+    RenderComponent: CustomInput,
+    config: {
+      type: "email",
+      name: "email",
+      label: "Email Address",
+      placeholder: "Enter your email",
+      validation: z.string().email(),
+      beforeInput: <AtSign size={16} strokeWidth={2} />,
+      containerClassName: "mb-4",
+      className: "peer ps-9",
+    },
+  },
+  // {
+  //   type: "multiselect",
+  //   RenderComponent: MultiSelectCommand,
+  //   config: {
+  //     name: "skills",
+  //     label: "Technical Skills",
+  //     placeholder: "Select skills...",
+  //     validation: z.array(z.string()).min(1, "Select at least one skill"),
+  //     options: async () => [
+  //       { value: "react", label: "React" },
+  //       { value: "typescript", label: "TypeScript" },
+  //       { value: "node", label: "Node.js" },
+  //     ],
+  //     conditionalOptions: {
+  //       fieldName: "role",
+  //       fn: async (role: string) => {
+  //         if (role === "frontend") {
+  //           return [
+  //             { value: "react", label: "React" },
+  //             { value: "vue", label: "Vue" },
+  //           ];
+  //         }
+  //         return [];
+  //       },
+  //     },
+  //     className: "w-full",
+  //   },
+  // },
+
+  {
+    type: "multiselect",
+    RenderComponent: MultiSelectCommand,
+    config: {
+      name: "skills",
+      label: "Technical Skills",
+      placeholder: "Select skills...",
+      validation: z.array(z.string()).min(1, "Select at least one skill"),
+      // Provide your options as an async function:
+      options: async () => [
+        { value: "react", label: "React" },
+        { value: "typescript", label: "TypeScript" },
+        { value: "node", label: "Node.js" },
+      ],
+      // Optionally provide conditional options:
+      conditionalOptions: {
+        fieldName: "role",
+        fn: async (role: string) => {
+          if (role === "frontend") {
+            return [
+              { value: "react", label: "React" },
+              { value: "vue", label: "Vue" },
+            ];
+          }
+          return [];
+        },
+      },
+      // (If your form provides the value of the "role" field, pass it as conditionalValue)
+      className: "w-full",
     },
   },
 ];

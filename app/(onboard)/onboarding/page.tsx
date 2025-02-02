@@ -15,6 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import FieldTest from "@/components/FieldTest";
+import Component from "@/components/comp-46";
 
 export default function OnboardingPage() {
   // const { userId } = await auth();
@@ -34,6 +35,7 @@ export default function OnboardingPage() {
     <div>
       <h1>Hey... You got it.</h1>
       <FieldTest />
+      <Component />
     </div>
   );
 }

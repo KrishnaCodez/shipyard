@@ -3,7 +3,6 @@ import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
-import { HoverButton } from "./ui/hover-button";
 
 const list = [
   { name: "Home", href: "/" },
@@ -55,11 +54,11 @@ const Navbar = () => {
           </div>
           <div className="flex gap-3">
             <Link href="/sign-in">
-              <HoverButton className="text-white">Login</HoverButton>
+              <Button className="text-white">Login</Button>
             </Link>
 
             <Link href="/sign-up">
-              <HoverButton className="text-white">Sign up</HoverButton>
+              <Button className="text-white">Sign up</Button>
             </Link>
           </div>
         </div>

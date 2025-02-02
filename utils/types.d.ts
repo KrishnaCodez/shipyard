@@ -36,6 +36,10 @@ export type CommonConfig = {
 type InputConfig = {
   type: HTMLInputTypeAttribute;
   fileRef?: any;
+
+  beforeInput?: React.ReactNode;
+  afterInput?: React.ReactNode;
+  containerClassName?: string;
 };
 
 export type MagicFieldInput = {
@@ -64,9 +68,18 @@ export type SelectConfig = {
   };
 };
 
+export type MultiSelectConfig = SelectConfig & {
+  maxSelections?: number;
+  value?: string[];
+};
+
 export type MagicFieldSelect = {
   type: "select";
   config: CommonConfig & SelectConfig;
+};
+export type MagicFieldMultiSelect = {
+  type: "multiselect";
+  config: CommonConfig & MultiSelectConfig;
 };
 
 export type TextAreaConfig = {
@@ -79,8 +92,21 @@ export type MagicFieldTextArea = {
   config: CommonConfig & TextAreaConfig;
 };
 
+export type MagicFieldMultiSelect = {
+  type: "multiselect";
+  config: CommonConfig &
+    SelectConfig & {
+      maxSelections?: number;
+    };
+};
+
 export type MagicField = Readonly<
-  (MagicFieldSelect | MagicFieldInput | MagicFieldTextArea) & {
+  (
+    | MagicFieldSelect
+    | MagicFieldInput
+    | MagicFieldTextArea
+    | MagicFieldMultiSelect
+  ) & {
     RenderComponent: RenderComponent;
   }
 >;
@@ -93,6 +119,12 @@ export type TypeWithRenderField<T> = T & {
     setValue: UseFormSetValue<any>;
   };
 };
+export type MultiSelectFieldProps = Partial<
+  TypeWithRenderField<MagicFieldMultiSelect["config"]> & {
+    value?: string[];
+    onChange?: (value: string[]) => void;
+  }
+>;
 
 export type InputFieldProps = Partial<
   TypeWithRenderField<MagicFieldInput["config"]>
@@ -114,6 +146,9 @@ export type SelectFieldRenderComponent =
 
 export type TextAreaFieldRenderComponent =
   React.FunctionComponent<TextAreaFieldProps>;
+
+export type MultiSelectFieldRenderComponent =
+  React.FunctionComponent<MultiSelectFieldProps>;
 
 export type RenderComponent =
   | InputFieldRenderComponent
