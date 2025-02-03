@@ -1,413 +1,211 @@
-// MultiSelectCommand.tsx
-import React from "react";
-import { ChevronDown, LoaderIcon, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+"use client";
+
+import type * as React from "react";
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { X } from "lucide-react";
+import type { MultiSelectFieldProps, optionType } from "@/utils/types";
 import {
-  Command,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from "@/components/ui/command";
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { cn } from "@/lib/utils";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Tooltip,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
-// import Highlighter from "react-highlight-words";
-import { MultiSelectFieldProps, optionType } from "@/utils/types"; // Adjust the path as needed
+import { Button } from "@/components/ui/button";
 
-// Define the two tabs used for the command list.
-const tabTitles = ["add", "remove"] as const;
-type TabTitle = (typeof tabTitles)[number];
+export const CustomMultiSelect: React.FC<MultiSelectFieldProps> = (props) => {
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<optionType[]>([]);
+  const [options, setOptions] = useState<optionType[]>([]);
+  const [isFetchingData, setIsFetchingData] = useState(true);
+  const selectedContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLButtonElement>(null);
 
-/**
- * MultiSelectCommand
- *
- * This component is used as the RenderComponent for a multiselect field.
- * It expects the configuration defined in your MagicFieldMultiSelect type:
- *
- *   - `options`: a function returning (or Promise of) an array of optionType
- *   - `conditionalOptions` (optional): an object with a field name and a function that,
- *      given a string value, returns (or Promise of) an array of optionType.
- *   - `value`: an array of currently selected option values.
- *   - `onChange`: callback to update the value.
- *
- * Additional configuration such as `className` is applied to the outer container.
- */
-const MultiSelectCommand: React.FC<MultiSelectFieldProps> = ({
-  value,
-  onChange,
-  options,
-  conditionalOptions,
-  className,
-  // Extract additional properties from rest. We expect conditionalValue may be passed.
-  ...rest
-}) => {
-  // Extract conditionalValue from rest (if provided)
-  const { conditionalValue } = rest as { conditionalValue?: string };
+  useEffect(() => {
+    const fetchOptions = async () => {
+      if (!props.options) return;
 
-  const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
-  const [activeTab, setActiveTab] = React.useState<TabTitle>("add");
-  const [loadedOptions, setLoadedOptions] = React.useState<optionType[]>([]);
-  const [loading, setLoading] = React.useState<boolean>(false);
-
-  // Load the primary options.
-  React.useEffect(() => {
-    async function loadOptions() {
-      setLoading(true);
-      let opts: optionType[] = [];
-      if (options) {
-        if (typeof options === "function") {
-          opts = await options();
-        } else {
-          opts = options;
-        }
+      setIsFetchingData(true);
+      try {
+        const fetchedOptions = await props.options();
+        setOptions(fetchedOptions);
+      } catch (error) {
+        console.error("Error fetching options:", error);
+        setOptions([{ label: `No ${props.label} Found`, value: " " }]);
       }
-      setLoadedOptions(opts);
-      setLoading(false);
+      setIsFetchingData(false);
+    };
+
+    fetchOptions();
+  }, [props.options, props.label]);
+
+  useEffect(() => {
+    if (selectedContainerRef.current) {
+      selectedContainerRef.current.scrollTo({
+        left: selectedContainerRef.current.scrollWidth,
+        behavior: "smooth",
+      });
     }
-    loadOptions();
-  }, [options]);
-
-  // If conditionalOptions and a conditionalValue are provided, load those options.
-  React.useEffect(() => {
-    async function loadConditional() {
-      if (conditionalOptions && conditionalValue) {
-        setLoading(true);
-        const opts = await conditionalOptions.fn(conditionalValue);
-        setLoadedOptions(opts);
-        setLoading(false);
-      }
-    }
-    loadConditional();
-  }, [conditionalOptions, conditionalValue]);
-
-  // Determine the effective loading state.
-  const isLoading = loading;
-
-  // Create a Set for quick lookup of selected option values.
-  const selectedIds = React.useMemo(
-    () => new Set(value?.filter(Boolean) || []),
-    [value]
-  );
-
-  // Partition the loaded options into "add" (not selected) and "remove" (selected).
-  const data = React.useMemo(() => {
-    const allOptions = loadedOptions || [];
-    const add = allOptions.filter((item) => !selectedIds.has(item.value));
-    const remove = allOptions.filter((item) => selectedIds.has(item.value));
-    return { add, remove };
-  }, [selectedIds, loadedOptions]);
-
-  // Handlers for toggling the popover.
-  const handleTogglePopover = React.useCallback(() => {
-    setIsPopoverOpen((prev) => !prev);
-  }, []);
-
-  const handleClosePopover = React.useCallback(() => {
-    setIsPopoverOpen(false);
-  }, []);
-
-  // When an item is clicked in the command list, update the selection.
-  const handleSelect = React.useCallback(
-    (item: optionType) => {
-      const newList =
-        activeTab === "add"
-          ? [...data.remove, item]
-          : data.remove.filter((d) => d.value !== item.value);
-      onChange?.(newList.map((d) => d.value));
-    },
-    [activeTab, data, onChange]
-  );
-
-  // "Select all" (or "remove all") handler.
-  const handleSelectAll = React.useCallback(() => {
-    onChange?.(activeTab === "add" ? loadedOptions.map((d) => d.value) : []);
-  }, [activeTab, onChange, loadedOptions]);
-
-  // Remove a single item.
-  const handleUnselect = React.useCallback(
-    (item: optionType) => {
-      const newList = data.remove.filter((d) => d.value !== item.value);
-      onChange?.(newList.map((d) => d.value));
-    },
-    [data.remove, onChange]
-  );
+  }, [selectedContainerRef]); // Removed unnecessary dependency: selected
 
   return (
-    <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
-      <SelectedProperty
-        isLoading={isLoading}
-        selected={data.remove}
-        handleTogglePopover={handleTogglePopover}
-        handleUnselect={handleUnselect}
-        className={className}
-      />
-      <PopoverContent className="min-w-[var(--radix-popper-anchor-width)] p-0 max-h-[300px] overflow-hidden">
-        <PropertiesList
-          selectedTab={activeTab}
-          list={data}
-          onTabValueChange={async (tab) => setActiveTab(tab as TabTitle)}
-          selectAll={handleSelectAll}
-          onSelect={handleSelect}
-          onClose={handleClosePopover}
-        />
-      </PopoverContent>
-    </Popover>
-  );
-};
+    <FormField
+      control={props.control}
+      name={props.name as any}
+      render={({ field }) => {
+        useEffect(() => {
+          // Set initial selected values
+          const initialValues = field.value || [];
+          const initialSelected = options.filter((option) =>
+            initialValues.includes(option.value)
+          );
+          setSelected(initialSelected);
+        }, [field.value, options]);
 
-/* --------------------------------------------------------------------------
-   SelectedProperty Component
-   -------------------------------------------------------------------------- */
+        const handleSelect = (item: optionType) => {
+          if (props.maxSelections && selected.length >= props.maxSelections) {
+            return;
+          }
+          const updatedSelected = [...selected, item];
+          setSelected(updatedSelected);
+          const updatedValues = updatedSelected.map((s) => s.value);
+          props.onChange?.(updatedValues);
+          field.onChange(updatedValues);
+        };
 
-type SelectedPropertyProps = React.ComponentProps<"button"> & {
-  selected?: optionType[];
-  isLoading?: boolean;
-  handleTogglePopover?: () => void;
-  handleUnselect?: (item: optionType) => void;
-};
+        const handleRemove = (item: optionType) => {
+          const updatedSelected = selected.filter(
+            (i) => i.value !== item.value
+          );
+          setSelected(updatedSelected);
+          const updatedValues = updatedSelected.map((s) => s.value);
+          props.onChange?.(updatedValues);
+          field.onChange(updatedValues);
 
-function SelectedProperty({
-  selected = [],
-  isLoading,
-  handleTogglePopover,
-  handleUnselect,
-  className,
-  ...props
-}: SelectedPropertyProps) {
-  return (
-    <TooltipProvider>
-      <PopoverTrigger asChild>
-        <Button
-          onClick={handleTogglePopover}
-          disabled={isLoading}
-          className={cn(
-            "flex h-auto min-h-10 w-full items-center justify-between rounded-md border bg-input p-1 hover:bg-input/80",
-            className
-          )}
-          {...props}
-        >
-          {selected.length > 0 ? (
-            <Tooltip delayDuration={100}>
-              <ScrollArea className="w-full">
-                <TooltipTrigger asChild>
-                  <div className="flex w-max gap-1">
-                    {selected.map((item) => (
-                      <Badge
-                        key={item.value}
-                        variant="default"
-                        className="flex-shrink rounded-sm text-[13.6px] font-medium capitalize hover:bg-primary"
-                      >
-                        {item.label}
-                        <span
-                          className="ml-1 rounded-full cursor-pointer outline-none ring-offset-background active:ring-2 active:ring-ring active:ring-offset-2"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleUnselect?.(item);
-                          }}
-                        >
-                          <X className="h-3 w-3 text-destructive hover:text-destructive/50" />
-                        </span>
-                      </Badge>
-                    ))}
-                  </div>
-                </TooltipTrigger>
-                <ScrollBar
-                  orientation="horizontal"
-                  className="opacity-40"
-                  onClick={(e) => e.stopPropagation()}
-                />
-              </ScrollArea>
-            </Tooltip>
-          ) : (
-            <>
-              {isLoading ? (
-                <div className="ml-2 mt-1 flex h-6 flex-1 items-center bg-transparent text-muted-foreground outline-none">
-                  <LoaderIcon className="animate-spin" />
-                </div>
-              ) : (
-                <div className="mx-auto flex w-full items-center justify-between">
-                  <span className="mx-3 text-sm capitalize text-muted-foreground">
-                    select
-                  </span>
-                  <ChevronDown className="mx-2 h-4 cursor-pointer text-muted-foreground" />
-                </div>
-              )}
-            </>
-          )}
-        </Button>
-      </PopoverTrigger>
-    </TooltipProvider>
-  );
-}
+          // Close popover if no tags are left
 
-/* --------------------------------------------------------------------------
-   PropertiesList Component
-   -------------------------------------------------------------------------- */
+          if (updatedSelected.length === 0) {
+            setOpen(false);
+          }
+        };
 
-type PropertiesListProps = {
-  list: Record<TabTitle, optionType[]>;
-  onTabValueChange: (value: TabTitle) => Promise<void>;
-  selectedTab: TabTitle;
-  selectAll: () => void;
-  onClose: () => void;
-  onSelect?: (value: optionType) => void;
-};
-
-function PropertiesList({
-  list,
-  onTabValueChange,
-  selectedTab,
-  ...props
-}: PropertiesListProps) {
-  return (
-    <Tabs
-      value={selectedTab}
-      onValueChange={(value) => onTabValueChange(value as TabTitle)}
-      className="w-full flex flex-col h-full"
-    >
-      <TabsList className="w-full rounded-b-none sticky top-0 z-10 bg-background">
-        {tabTitles.map((title) => (
-          <TabsTrigger key={title} className="w-full capitalize" value={title}>
-            {title}
-          </TabsTrigger>
-        ))}
-      </TabsList>
-      <div className="flex-grow overflow-auto">
-        {tabTitles.map((title) => (
-          <TabsContent key={title} value={title} className="h-full m-0">
-            <PropertyCommand
-              items={list[title]}
-              selectedTab={selectedTab}
-              {...props}
-            />
-          </TabsContent>
-        ))}
-      </div>
-    </Tabs>
-  );
-}
-
-/* --------------------------------------------------------------------------
-   PropertyCommand Component
-   -------------------------------------------------------------------------- */
-
-type PropertyCommandProps = {
-  items: optionType[];
-  onSelect?: (value: optionType) => void;
-  selectedTab: TabTitle;
-  selectAll?: () => void;
-  onClose?: () => void;
-};
-
-function PropertyCommand({
-  items,
-  onSelect,
-  onClose,
-  selectAll,
-  selectedTab,
-}: PropertyCommandProps) {
-  const [searchValue, setSearchValue] = React.useState("");
-
-  const searchResults =
-    searchValue.length > 0
-      ? items.filter((item) =>
-          item.label
-            .toString()
-            .toLowerCase()
-            .includes(searchValue.toLowerCase())
-        )
-      : [];
-
-  const isEmpty =
-    (searchValue.length > 0 && searchResults.length === 0) ||
-    (searchValue.length === 0 && items.length === 0);
-
-  const getItemList = (item: optionType) => (
-    <CommandItem
-      className="cursor-pointer"
-      key={item.value}
-      onSelect={() => onSelect?.(item)}
-    >
-      {item.label}
-
-      {/* <Highlighter
-        highlightClassName="rounded-md bg-amber-300/70 px-1 py-0.5 text-foreground"
-        searchWords={searchValue.trim().split(" ")}
-        autoEscape
-        textToHighlight={item.label.toString()}
-      /> */}
-    </CommandItem>
-  );
-
-  return (
-    <Command
-      className="overflow-hidden flex flex-col"
-      filter={(value, _) =>
-        value.toLowerCase().includes(searchValue.toLowerCase()) ? 1 : 0
-      }
-    >
-      <CommandInput
-        value={searchValue}
-        onValueChange={setSearchValue}
-        className="placeholder:Capitalize h-10 border-0 sticky top-0 z-10 bg-background"
-        placeholder="Search..."
-      />
-      <CommandList className="overflow-auto">
-        <div
-          className={cn(
-            "py-6 capitalize text-center hidden",
-            isEmpty && "block"
-          )}
-        >
-          empty
-        </div>
-        <CommandGroup>{items.map(getItemList)}</CommandGroup>
-      </CommandList>
-      <div className="border-t p-2 bg-background sticky bottom-0 z-10">
-        <div className="flex gap-2">
-          <Badge className="max-w-max">
-            {searchValue.length > 0
-              ? `${searchResults.length} of ${items.length}`
-              : items.length}
-          </Badge>
-          <div
-            className={cn(
-              "flex flex-1 gap-2",
-              (searchValue.length > 0 || items.length < 1) && "hidden"
+        return (
+          <FormItem className={cn("space-y-2", props.cns?.container)}>
+            {props.label && (
+              <FormLabel className={cn(props.cns?.label)}>
+                {props.label}
+              </FormLabel>
             )}
-          >
-            <span
-              onClick={selectAll}
-              className="relative flex justify-center gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm cursor-pointer flex-1 text-center capitalize hover:bg-muted"
-            >
-              {selectedTab === "remove" ? "remove all" : "add all"}
-            </span>
-            <Separator orientation="vertical" className="h-full" />
-          </div>
-          <span
-            onClick={onClose}
-            className="relative flex justify-center gap-2 select-none items-center rounded-sm px-2 py-1.5 text-sm cursor-pointer flex-1 text-center capitalize hover:bg-muted"
-          >
-            close
-          </span>
-        </div>
-      </div>
-    </Command>
-  );
-}
+            <FormControl>
+              <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild className="w-full">
+                  {/* <Button
+                    ref={inputRef}
+                    variant="outline"
+                    role="combobox"
+                  ></Button> */}
 
-export default MultiSelectCommand;
+                  <motion.div
+                    className={cn(
+                      "w-full flex items-center justify-start gap-1.5 bg-white border min-h-[3rem] mt-2 mb-3 overflow-x-auto p-1.5 no-scrollbar",
+                      props.cns?.formItem
+                    )}
+                    style={{
+                      borderRadius: 8,
+                      width: inputRef.current
+                        ? inputRef.current.offsetWidth
+                        : "100%",
+                    }}
+                    ref={selectedContainerRef}
+                    layout
+                  >
+                    {selected.map((item) => (
+                      <motion.div
+                        key={item.value}
+                        className="flex items-center gap-1 pl-3 pr-1 py-1
+                        bg-white shadow-md border h-full shrink-0"
+                        style={{ borderRadius: 6 }}
+                        layoutId={`tag-${item.value}`}
+                      >
+                        <motion.span
+                          layoutId={`tag-${item.value}-label`}
+                          className="text-gray-700 font-medium"
+                        >
+                          {item.label}
+                        </motion.span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Added stop propagation
+                            handleRemove(item);
+                          }}
+                          className="p-1 rounded-full"
+                        >
+                          <X className="h-4 w-4 text-gray-500" />
+                        </button>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-full p-0"
+                  align="start"
+                  style={{
+                    width: "100%",
+                  }}
+                >
+                  <div
+                    className="bg-white shadow-sm p-2 border w-full"
+                    style={{ borderRadius: 8 }}
+                  >
+                    <div className="flex flex-wrap gap-2 w-full">
+                      {isFetchingData ? (
+                        <div className="w-full flex p-3 justify-center items-center">
+                          Loading...
+                        </div>
+                      ) : options.length === 0 ? (
+                        <div className="w-full flex p-3 justify-center items-center">
+                          No {props.label} left
+                        </div>
+                      ) : (
+                        options
+                          .filter(
+                            (option) =>
+                              !selected.some((s) => s.value === option.value)
+                          )
+                          .map((option) => (
+                            <motion.button
+                              key={option.value}
+                              layoutId={`tag-${option.value}`}
+                              className="flex items-center gap-1 px-4 py-2.5 bg-gray-100/60 rounded-full shrink-0"
+                              onClick={() => handleSelect(option)}
+                              style={{ borderRadius: 14 }}
+                            >
+                              <motion.span
+                                layoutId={`tag-${option.value}-label`}
+                                className="text-gray-700 font-medium"
+                              >
+                                {option.label}
+                              </motion.span>
+                            </motion.button>
+                          ))
+                      )}
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </FormControl>
+
+            <FormMessage />
+          </FormItem>
+        );
+      }}
+    />
+  );
+};

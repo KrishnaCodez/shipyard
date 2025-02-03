@@ -12,7 +12,7 @@ import CustomInput from "./custom/input";
 import CustomTextArea from "./custom/textarea";
 import PhoneNumberInput from "./custom/phone-input";
 import { AtSign } from "lucide-react";
-import MultiSelectCommand from "./custom/multiselect";
+import { CustomMultiSelect } from "./custom/multiselect";
 
 const fields: MagicField[] = [
   {
@@ -120,43 +120,15 @@ const fields: MagicField[] = [
       className: "peer ps-9",
     },
   },
-  // {
-  //   type: "multiselect",
-  //   RenderComponent: MultiSelectCommand,
-  //   config: {
-  //     name: "skills",
-  //     label: "Technical Skills",
-  //     placeholder: "Select skills...",
-  //     validation: z.array(z.string()).min(1, "Select at least one skill"),
-  //     options: async () => [
-  //       { value: "react", label: "React" },
-  //       { value: "typescript", label: "TypeScript" },
-  //       { value: "node", label: "Node.js" },
-  //     ],
-  //     conditionalOptions: {
-  //       fieldName: "role",
-  //       fn: async (role: string) => {
-  //         if (role === "frontend") {
-  //           return [
-  //             { value: "react", label: "React" },
-  //             { value: "vue", label: "Vue" },
-  //           ];
-  //         }
-  //         return [];
-  //       },
-  //     },
-  //     className: "w-full",
-  //   },
-  // },
-
   {
     type: "multiselect",
-    RenderComponent: MultiSelectCommand,
+    RenderComponent: CustomMultiSelect,
     config: {
       name: "skills",
       label: "Technical Skills",
       placeholder: "Select skills...",
       validation: z.array(z.string()).min(1, "Select at least one skill"),
+        className: "w-full",
       // Provide your options as an async function:
       options: async () => [
         { value: "react", label: "React" },
@@ -177,7 +149,6 @@ const fields: MagicField[] = [
         },
       },
       // (If your form provides the value of the "role" field, pass it as conditionalValue)
-      className: "w-full",
     },
   },
 ];
