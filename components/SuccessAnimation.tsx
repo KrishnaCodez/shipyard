@@ -5,7 +5,7 @@ import { Check } from "lucide-react";
 
 export function SuccessAnimation() {
   return (
-    <div className="flex h-[300px] items-center justify-center">
+    <div className="flex w-full h-full items-center justify-center">
       <motion.div
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
@@ -14,7 +14,7 @@ export function SuccessAnimation() {
           stiffness: 260,
           damping: 20,
         }}
-        className="flex h-24 w-24 items-center justify-center rounded-full bg-primary/10"
+        className="flex h-24 w-24 items-center justify-center rounded-full bg-green-400/20"
       >
         <motion.div
           initial={{ scale: 0 }}
@@ -25,7 +25,7 @@ export function SuccessAnimation() {
             stiffness: 260,
             damping: 20,
           }}
-          className="flex h-16 w-16 items-center justify-center rounded-full bg-primary"
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-green-400"
         >
           <motion.div
             initial={{ opacity: 0 }}

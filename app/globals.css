@@ -93,5 +93,5 @@ body {
 }
 
 [data-radix-popper-content-wrapper]:has(> [data-custom="multiselect"]) {
-  width: 100% !important;
+  /* width: 100% !important; */
 }
