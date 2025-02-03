@@ -40,7 +40,7 @@ const CustomDatePicker = (props: InputFieldProps) => {
         return (
           <div
             className={cn(
-              "space-y-2 mt-3",
+              "space-y-2 ",
               props.cns?.container,
               props.className
             )}
@@ -59,7 +59,11 @@ const CustomDatePicker = (props: InputFieldProps) => {
                       props.cns?.input
                     )}
                   >
-                    {value ? format(value, "PPP") : <span>Pick a date</span>}
+                    {value ? (
+                      format(value, "PPP")
+                    ) : (
+                      <span>{props.placeholder}</span>
+                    )}
                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                   </Button>
                 </PopoverTrigger>

@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import FieldTest from "@/components/FieldTest";
-import Component from "@/components/comp-46";
+import OnboardingForm from "@/components/OnboardingForm";
 
 export default function OnboardingPage() {
   // const { userId } = await auth();
@@ -33,9 +33,9 @@ export default function OnboardingPage() {
 
   return (
     <div>
-      <h1>Hey... You got it.</h1>
-      <FieldTest />
-      <Component />
+      {/* <h1>Hey... You got it.</h1> */}
+      {/* <FieldTest /> */}
+      <OnboardingForm />
     </div>
   );
 }

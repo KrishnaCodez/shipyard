@@ -26,11 +26,11 @@ import {
 export default function SignInPage() {
   return (
     <Dialog>
-      <DialogTrigger asChild>
+      <DialogTrigger className="" asChild>
         <Button variant="outline">Sign in</Button>
       </DialogTrigger>
       <DialogContent>
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col  items-center gap-2">
           <div
             className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border"
             aria-hidden="true"

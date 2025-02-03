@@ -105,19 +105,12 @@ export const CustomMultiSelect: React.FC<MultiSelectFieldProps> = (props) => {
               </FormLabel>
             )}
             <FormControl>
-              <div className="custom-multiselect w-full">
-                {/* <div ref={popoverContainerRef} /> */}
+              <div className=" w-full">
                 <Popover open={open} onOpenChange={setOpen}>
                   <PopoverTrigger asChild className="w-full ">
-                    {/* <Button
-                    ref={inputRef}
-                    variant="outline"
-                    role="combobox"
-                  ></Button> */}
-
                     <motion.div
                       className={cn(
-                        "w-full flex items-center justify-start gap-1.5 bg-white border min-h-[3rem] mt-2 mb-3 overflow-x-auto p-1.5 no-scrollbar",
+                        "w-full flex items-center justify-start gap-1.5 h-10  rounded-md border border-input bg-background p-1 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground  focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm no-scrollbar cursor-pointer",
                         props.cns?.formItem
                       )}
                       style={{
@@ -129,11 +122,16 @@ export const CustomMultiSelect: React.FC<MultiSelectFieldProps> = (props) => {
                       ref={selectedContainerRef}
                       layout
                     >
+                      {selected.length === 0 && (
+                        <span className="text-muted-foreground pl-2">
+                          {props.placeholder}
+                        </span>
+                      )}
                       {selected.map((item) => (
                         <motion.div
                           key={item.value}
                           className="flex items-center gap-1 pl-3 pr-1 py-1
-                        bg-white shadow-md border h-full shrink-0"
+                        bg-white shadow-sm border h-full shrink-0"
                           style={{ borderRadius: 6 }}
                           layoutId={`tag-${item.value}`}
                         >
