@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Ship } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { HoverButton } from "./ui/hover-button";
+import { Button } from "./ui/button";
 
 function SparkLeft({
   className,
@@ -288,7 +288,7 @@ function Hero({}: {}) {
               real products. Explore daily updates of student-created projects
               and events
             </p>
-            <HoverButton className="text-white">Start Building</HoverButton>
+            <Button className="text-white">Start Building</Button>
           </motion.div>
         </div>
       </div>

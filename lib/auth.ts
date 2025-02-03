@@ -1,9 +1,9 @@
-import { useAuth } from "@clerk/nextjs";
 import { prisma } from "./prisma";
 import { Role } from "@prisma/client";
+import { auth } from "@clerk/nextjs/server";
 
 export async function checkOnboardingStatus() {
-  const { userId } = useAuth();
+  const { userId } = await auth();
 
   if (!userId) {
     return {
