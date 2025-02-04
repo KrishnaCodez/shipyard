@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronLeft, ChevronRight, Info, X } from "lucide-react";
+import { AtSign, ChevronLeft, ChevronRight, Info, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -63,7 +63,7 @@ const steps = [
   },
   {
     id: "step-3",
-    name: "Project Preferences",
+    name: "Setup Profile",
     // description: "Choose your preferred collaboration settings.",
     fields: [
       "projectType",
@@ -113,7 +113,7 @@ const personalDetails: MagicField[] = [
     RenderComponent: SelectCommand,
     config: {
       name: "degreeLevel",
-      label: "degreeLevel",
+      label: "Degree Level",
       className: "w-full grid grod-rows-2",
       placeholder: "Select your Degree level",
       validation: z.string().min(2, "Please select a degreeLevel"),
@@ -150,22 +150,6 @@ const personalDetails: MagicField[] = [
       defaultValue: "",
     },
   },
-  {
-    type: "textarea",
-    RenderComponent: CustomTextArea,
-    config: {
-      cols: 10,
-      name: "bio" as const,
-      label: "Bio (Optional)",
-      className: "col-span-full",
-      placeholder: "Tell us about yourself... ",
-      validation: z
-        .string()
-        .min(10, { message: "Minimum 10 characters" })
-        .max(200, { message: "Maximum 200 characters" }), // Add max length
-      rows: 1,
-    },
-  },
 ];
 
 const technicalProfile: MagicField[] = [
@@ -183,6 +167,16 @@ const technicalProfile: MagicField[] = [
         { value: "react", label: "React" },
         { value: "typescript", label: "TypeScript" },
         { value: "node", label: "Node.js" },
+        { value: "graphql", label: "GraphQL" },
+        { value: "next", label: "Next.js" },
+        { value: "vue", label: "Vue" },
+        { value: "svelte", label: "Svelte" },
+        { value: "angular", label: "Angular" },
+        { value: "tailwind", label: "Tailwind CSS" },
+        { value: "bootstrap", label: "Bootstrap" },
+        { value: "chakra", label: "Chakra UI" },
+        { value: "material", label: "Material UI" },
+        { value: "ant", label: "Ant Design" },
       ],
       // Optionally provide conditional options:
       conditionalOptions: {
@@ -244,6 +238,49 @@ const technicalProfile: MagicField[] = [
   },
 ];
 
+const setUpProfile: MagicField[] = [
+  {
+    type: "input",
+    RenderComponent: CustomInput,
+    config: {
+      type: "text",
+      name: "username",
+      label: "Username",
+      placeholder: "username",
+      validation: z.string().min(3, "Username must be at least 2 characters"),
+      beforeInput: <AtSign className="h-4 w-4" />,
+    },
+  },
+  {
+    type: "textarea",
+    RenderComponent: CustomTextArea,
+    config: {
+      cols: 10,
+      name: "bio" as const,
+      label: "Bio (Optional)",
+      className: "col-span-full",
+      placeholder: "Tell us about yourself... ",
+      validation: z
+        .string()
+        .min(10, { message: "Minimum 10 characters" })
+        .max(200, { message: "Maximum 200 characters" }), // Add max length
+      rows: 1,
+    },
+  },
+
+  {
+    type: "input",
+    config: {
+      name: "profilePhoto",
+      type: "file",
+      label: "Profile Photo",
+      placeholder: "Upload your Profile Photo",
+      validation: z.instanceof(FileList).optional(),
+      onChange: (e) => {},
+    },
+    RenderComponent: CustomInput,
+  },
+];
 const formSchema = z.object({
   // Step 1
 });
@@ -268,10 +305,14 @@ export default function OnboardingForm() {
 
   const processForm = async (data: z.infer<typeof formSchema>) => {
     setShowSuccess(true);
+
+    // const audio = new Audio(successSound);
+    // audio.play();
+
     // Redirect after animation completes
-    // setTimeout(() => {
-    //   router.push("/product");
-    // }, 2000); // 2 seconds for animation
+    setTimeout(() => {
+      router.push("/product");
+    }, 2000); // 2 seconds for animation
   };
 
   const getStepStatus = (stepIndex: number) => {
@@ -407,7 +448,19 @@ export default function OnboardingForm() {
                         )}
 
                         {step === 2 && (
-                          <div className="grid gap-6">{/* Project Type */}</div>
+                          <div className="grid gap-6">
+                            {/* Project Type */}
+
+                            {setUpProfile.map(
+                              ({ config, RenderComponent }, i) => (
+                                <RenderComponent
+                                  key={i}
+                                  {...config}
+                                  control={form.control}
+                                />
+                              )
+                            )}
+                          </div>
                         )}
                       </motion.div>
                     </AnimatePresence>
