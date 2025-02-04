@@ -28,6 +28,7 @@ export const CustomMultiSelect: React.FC<MultiSelectFieldProps> = (props) => {
   const selectedContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLButtonElement>(null);
   const popoverContainerRef = useRef<HTMLDivElement>(null);
+  const [containerWidth, setContainerWidth] = useState("100%");
 
   useEffect(() => {
     const fetchOptions = async () => {
@@ -55,6 +56,12 @@ export const CustomMultiSelect: React.FC<MultiSelectFieldProps> = (props) => {
       });
     }
   }, [selectedContainerRef]); // Removed unnecessary dependency: selected
+
+  useEffect(() => {
+    if (open && selectedContainerRef.current) {
+      setContainerWidth(`${selectedContainerRef.current.offsetWidth}px`);
+    }
+  }, [open]);
 
   return (
     <FormField
@@ -108,9 +115,10 @@ export const CustomMultiSelect: React.FC<MultiSelectFieldProps> = (props) => {
               <div className=" w-full">
                 <Popover open={open} onOpenChange={setOpen}>
                   <PopoverTrigger asChild className="w-full ">
-                    <motion.div
+                    <div
                       className={cn(
-                        "w-full flex items-center justify-start gap-1.5 h-10  rounded-md border border-input bg-background p-1 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground  focus-visible:ring-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm no-scrollbar cursor-pointer",
+                        "w-full flex items-center justify-start gap-1.5 h-10  rounded-md border border-input bg-background p-1 text-base ring-offset-background  disabled:cursor-not-allowed disabled:opacity-50 md:text-sm no-scrollbar cursor-pointer",
+                        "overflow-x-auto no-scrollbar",
                         props.cns?.formItem
                       )}
                       style={{
@@ -120,7 +128,7 @@ export const CustomMultiSelect: React.FC<MultiSelectFieldProps> = (props) => {
                           : "100%",
                       }}
                       ref={selectedContainerRef}
-                      layout
+                      // layout
                     >
                       {selected.length === 0 && (
                         <span className="text-muted-foreground pl-2">
@@ -128,19 +136,19 @@ export const CustomMultiSelect: React.FC<MultiSelectFieldProps> = (props) => {
                         </span>
                       )}
                       {selected.map((item) => (
-                        <motion.div
+                        <div
                           key={item.value}
                           className="flex items-center gap-1 pl-3 pr-1 py-1
                         bg-white shadow-sm border h-full shrink-0"
                           style={{ borderRadius: 6 }}
-                          layoutId={`tag-${item.value}`}
+                          // layoutId={`tag-${item.value}`}
                         >
-                          <motion.span
-                            layoutId={`tag-${item.value}-label`}
+                          <span
+                            // layoutId={`tag-${item.value}-label`}
                             className="text-gray-700 font-medium"
                           >
                             {item.label}
-                          </motion.span>
+                          </span>
                           <button
                             onClick={(e) => {
                               e.stopPropagation(); // Added stop propagation
@@ -150,17 +158,22 @@ export const CustomMultiSelect: React.FC<MultiSelectFieldProps> = (props) => {
                           >
                             <X className="h-4 w-4 text-gray-500" />
                           </button>
-                        </motion.div>
+                        </div>
                       ))}
-                    </motion.div>
+                    </div>
                   </PopoverTrigger>
 
                   <PopoverContent
                     forceMount
                     className="w-full custom-popover-content p-0"
                     align="start"
+                    // style={{
+                    //   width: "100%",
+                    // }}
+
                     style={{
-                      width: "100%",
+                      width: containerWidth,
+                      maxWidth: "none", // Disable default max-width
                     }}
                     data-custom="multiselect"
                   >
@@ -184,20 +197,20 @@ export const CustomMultiSelect: React.FC<MultiSelectFieldProps> = (props) => {
                                 !selected.some((s) => s.value === option.value)
                             )
                             .map((option) => (
-                              <motion.button
+                              <button
                                 key={option.value}
-                                layoutId={`tag-${option.value}`}
+                                // layoutId={`tag-${option.value}`}
                                 className="flex items-center gap-1 px-4 py-2.5 bg-gray-100/60 rounded-full shrink-0"
                                 onClick={() => handleSelect(option)}
                                 style={{ borderRadius: 14 }}
                               >
-                                <motion.span
-                                  layoutId={`tag-${option.value}-label`}
+                                <span
+                                  // layoutId={`tag-${option.value}-label`}
                                   className="text-gray-700 font-medium"
                                 >
                                   {option.label}
-                                </motion.span>
-                              </motion.button>
+                                </span>
+                              </button>
                             ))
                         )}
                       </div>

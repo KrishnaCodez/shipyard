@@ -95,3 +95,13 @@ body {
 [data-radix-popper-content-wrapper]:has(> [data-custom="multiselect"]) {
   /* width: 100% !important; */
 }
+
+.custom-popover-content {
+  overflow: hidden;
+}
+
+/* Optional: Add scroll for many options */
+.popover-options-container {
+  max-height: 300px;
+  overflow-y: auto;
+}

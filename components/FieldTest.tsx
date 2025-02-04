@@ -103,7 +103,6 @@ const fields: MagicField[] = [
       label: "Check Name",
       placeholder: "Enter your first name",
       validation: z.string().min(2, "First name must be at least 2 characters"),
-      defaultValue: "",
     },
   },
   {
@@ -128,7 +127,7 @@ const fields: MagicField[] = [
       label: "Technical Skills",
       placeholder: "Select skills...",
       validation: z.array(z.string()).min(1, "Select at least one skill"),
-        className: "w-full",
+      className: "w-full",
       // Provide your options as an async function:
       options: async () => [
         { value: "react", label: "React" },
