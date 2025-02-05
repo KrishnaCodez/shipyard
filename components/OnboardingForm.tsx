@@ -277,6 +277,7 @@ export default function OnboardingForm() {
   });
 
   const uploadImage = async (file: File, fileName: string) => {
+    console.log("Starting image upload...");
     const imagekit = new ImageKit({
       publicKey: process.env.NEXT_PUBLIC_PUBLIC_KEY ?? "",
       privateKey: process.env.NEXT_PUBLIC_PRIVATE_KEY ?? "",
@@ -288,11 +289,12 @@ export default function OnboardingForm() {
       reader.onload = () => resolve(reader.result as string);
       reader.onerror = (error) => reject(error);
     });
+    console.log("File converted to base64, uploading...");
     const uploadedFile = await imagekit.upload({
-      file: fileBase64, // Pass the base64-encoded string
+      file: fileBase64,
       fileName: fileName,
     });
-
+    console.log("Image upload completed. URL:", uploadedFile.url);
     return uploadedFile.url;
   };
 
@@ -301,6 +303,7 @@ export default function OnboardingForm() {
     if (data.profilePhoto && data.profilePhoto.length > 0) {
       const file = data.profilePhoto[0]; // Get the first file from the array
       profilePhotoUrl = await uploadImage(file, data.username); // Pass the File object
+      console.log("Profile photo uploaded. URL:", profilePhotoUrl);
     }
 
     console.log("Form data:", data);
