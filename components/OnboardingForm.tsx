@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
@@ -23,6 +22,7 @@ import { CustomMultiSelect } from "./custom/multiselect";
 import CustomSelect from "./custom/select";
 import CustomInput from "./custom/input";
 import { onBoardDetails } from "@/utils/actions";
+import ImageKit from "imagekit";
 
 const steps = [
   {
@@ -227,10 +227,11 @@ const setUpProfile: MagicField[] = [
       type: "file",
       label: "Profile Photo",
       placeholder: "Upload your Profile Photo",
-      validation: z.instanceof(FileList).optional(),
-      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
-        // Handle file change
-      },
+      validation: z.array(z.instanceof(File)).optional(),
+
+      // onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+      //   // Handle file change
+      // },
     },
     RenderComponent: CustomInput,
   },
@@ -249,13 +250,7 @@ const formSchema = z.object({
   portfolio: z.string().url("Please enter a valid URL").or(z.literal("")),
   username: z.string().min(3, "Username must be at least 3 characters"),
   bio: z.string().min(10).max(200).optional(),
-  profilePhoto: z
-    .any()
-    .refine((files) => {
-      if (!(files instanceof FileList)) return true;
-      return files?.[0]?.size <= 5 * 1024 * 1024; // 5MB limit
-    }, "Max file size is 5MB")
-    .optional(),
+  profilePhoto: z.array(z.instanceof(File)).optional(),
 });
 
 export default function OnboardingForm() {
@@ -281,20 +276,47 @@ export default function OnboardingForm() {
     },
   });
 
+  const uploadImage = async (file: File, fileName: string) => {
+    const imagekit = new ImageKit({
+      publicKey: process.env.NEXT_PUBLIC_PUBLIC_KEY ?? "",
+      privateKey: process.env.NEXT_PUBLIC_PRIVATE_KEY ?? "",
+      urlEndpoint: process.env.NEXT_PUBLIC_URL_ENDPOINT ?? "",
+    });
+    const fileBase64 = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+    const uploadedFile = await imagekit.upload({
+      file: fileBase64, // Pass the base64-encoded string
+      fileName: fileName,
+    });
+
+    return uploadedFile.url;
+  };
+
   const processForm = async (data: z.infer<typeof formSchema>) => {
+    let profilePhotoUrl = "";
+    if (data.profilePhoto && data.profilePhoto.length > 0) {
+      const file = data.profilePhoto[0]; // Get the first file from the array
+      profilePhotoUrl = await uploadImage(file, data.username); // Pass the File object
+    }
+
     console.log("Form data:", data);
 
     const formData = new FormData();
 
     // Append form fields
-    Object.entries(data).forEach(([key, value]) => {
-      if (key === "profilePhoto" && value instanceof FileList) {
-        formData.append("profilePhoto", value[0]);
-      } else if (Array.isArray(value)) {
+    Object.entries({
+      ...data,
+      profilePhoto: profilePhotoUrl,
+    }).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
         value.forEach((v) => formData.append(key, v));
-      } else if (value instanceof Date) {
-        formData.append(key, value.toISOString());
-      } else if (value) {
+      } else if (value instanceof File) {
+        formData.append(key, value);
+      } else if (value !== null && value !== undefined) {
         formData.append(key, value.toString());
       }
     });
