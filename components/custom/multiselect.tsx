@@ -49,7 +49,7 @@ export const CustomMultiSelect: React.FC<MultiSelectFieldProps> = (props) => {
   }, [props.options, props.label]);
 
   useEffect(() => {
-    if (selectedContainerRef.current) {
+  if (selectedContainerRef.current) {
       selectedContainerRef.current.scrollTo({
         left: selectedContainerRef.current.scrollWidth,
         behavior: "smooth",
