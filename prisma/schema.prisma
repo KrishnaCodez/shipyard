@@ -14,23 +14,26 @@ datasource db {
 }
 
 model User {
-  id                 String              @id @default(cuid())
-  clerkId            String?             @unique
-  image              String
-  name               String
-  email              String              @unique
+  id                String            @id @default(cuid())
+  clerkId           String?           @unique
+  image             String
+  name              String
+  email             String            @unique
   // password      String
-  personalDetails    PersonalDetails?
-  technicalProfile   TechnicalProfile?
-  projectPreferences ProjectPreferences?
-  role               Role                @default(USER)
-  onboarded          Boolean             @default(false)
-  notifications      Notification[]
-  upvotes            Upvote[]
-  products           Product[]
-  comments           Comment[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  username          String            @unique
+  bio               String?
+  profilePictureURL String?
+  personalDetails   PersonalDetails?
+  technicalProfile  TechnicalProfile?
+  // projectPreferences ProjectPreferences?
+  role              Role              @default(USER)
+  onboarded         Boolean           @default(false)
+  notifications     Notification[]
+  upvotes           Upvote[]
+  products          Product[]
+  comments          Comment[]
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 }
 
 model PersonalDetails {
@@ -64,20 +67,20 @@ model TechnicalProfile {
   updatedAt        DateTime        @updatedAt
 }
 
-model ProjectPreferences {
-  id                    String    @id @default(cuid())
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId                String    @unique
-  projectTypes          String[]
-  weeklyAvailability    String
-  teamSizePreference    String
-  collaborationMode     String[]
-  pastProjects          String?
-  competitionGoals      String?
-  availabilityStartDate DateTime?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-}
+// model ProjectPreferences {
+//   id                    String    @id @default(cuid())
+//   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+//   userId                String    @unique
+//   projectTypes          String[]
+//   weeklyAvailability    String
+//   teamSizePreference    String
+//   collaborationMode     String[]
+//   pastProjects          String?
+//   competitionGoals      String?
+//   availabilityStartDate DateTime?
+//   createdAt             DateTime  @default(now())
+//   updatedAt             DateTime  @updatedAt
+// }
 
 model Category {
   id       String    @id @default(cuid())

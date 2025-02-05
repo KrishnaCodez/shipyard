@@ -2,76 +2,42 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AtSign, ChevronLeft, ChevronRight, Info, X } from "lucide-react";
+import { AtSign, ChevronLeft, ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Form } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { StepIndicator } from "@/components/StepIndicator";
 import { SuccessAnimation } from "@/components/SuccessAnimation";
 import SelectCommand from "./custom/select-command";
-import { MagicField } from "@/utils/types";
+import type { MagicField } from "@/utils/types";
 import CustomDatePicker from "./custom/date-picker";
 import PhoneNumberInput from "./custom/phone-input";
 import CustomTextArea from "./custom/textarea";
 import { CustomMultiSelect } from "./custom/multiselect";
 import CustomSelect from "./custom/select";
 import CustomInput from "./custom/input";
-import { ArrayToZodResolver } from "@/lib/ArrayToZod";
 
 const steps = [
   {
     id: "step-1",
     name: "Personal Details",
-    // description: "Enter your basic information to get started.",
-    fields: ["university", "department", "degreeLevel", "age", "phone", "bio"],
+    fields: ["university", "department", "degreeLevel", "birthday", "phone"],
   },
   {
     id: "step-2",
     name: "Technical Profile",
-    // description: "Tell us about your skills and experience.",
-    fields: ["primarySkills", "experienceLevel", "interests", "preferredRoles"],
+    fields: ["skills", "experience", "github", "portfolio"],
   },
   {
     id: "step-3",
     name: "Setup Profile",
-    // description: "Choose your preferred collaboration settings.",
-    fields: [
-      "projectType",
-      "weeklyAvailability",
-      "teamSize",
-      "collaborationMode",
-    ],
+    fields: ["username", "bio", "profilePhoto"],
   },
 ];
 
@@ -102,13 +68,12 @@ const personalDetails: MagicField[] = [
       placeholder: "Select your department",
       validation: z.string().min(2, "Please select a department"),
       options: () => [
-        { label: "Charusat University", value: "next" },
-        { label: "Ganpat University", value: "react" },
-        { label: "LJ University", value: "vue" },
+        { label: "Computer Science", value: "computer_science" },
+        { label: "Engineering", value: "engineering" },
+        { label: "Design", value: "design" },
       ],
     },
   },
-
   {
     type: "select",
     RenderComponent: SelectCommand,
@@ -117,11 +82,11 @@ const personalDetails: MagicField[] = [
       label: "Degree Level",
       className: "w-full grid grod-rows-2",
       placeholder: "Select your Degree level",
-      validation: z.string().min(2, "Please select a degreeLevel"),
+      validation: z.string().min(2, "Please select a degree level"),
       options: () => [
-        { label: "Charusat University", value: "next" },
-        { label: "Ganpat University", value: "react" },
-        { label: "LJ University", value: "vue" },
+        { label: "Undergraduate", value: "undergraduate" },
+        { label: "Graduate", value: "graduate" },
+        { label: "PhD", value: "phd" },
       ],
     },
   },
@@ -133,11 +98,10 @@ const personalDetails: MagicField[] = [
       name: "birthday",
       label: "Birthday",
       placeholder: "Select your birthday",
-      validation: z.date().optional(),
+      validation: z.string().min(2, "Please select your birthday"),
       defaultValue: "",
     },
   },
-
   {
     type: "input",
     RenderComponent: PhoneNumberInput,
@@ -147,7 +111,10 @@ const personalDetails: MagicField[] = [
       label: "Phone (Optional)",
       className: "col-span-full",
       placeholder: "+1 (555) 000-0000",
-      validation: z.string().min(10, "Number must be at least 10 characters"),
+      validation: z
+        .string()
+        .min(10, "Number must be at least 10 characters")
+        .optional(),
       defaultValue: "",
     },
   },
@@ -161,10 +128,8 @@ const technicalProfile: MagicField[] = [
       name: "skills",
       label: "Technical Skills",
       placeholder: "Select skills...",
-      validation: z.array(z.string()).min(1, "Select at least two skill"),
+      validation: z.array(z.string()).min(1, "Select at least one skill"),
       className: "w-full",
-      defaultValue: [] as string[],
-      // Provide your options as an async function:
       options: async () => [
         { value: "react", label: "React" },
         { value: "typescript", label: "TypeScript" },
@@ -180,20 +145,6 @@ const technicalProfile: MagicField[] = [
         { value: "material", label: "Material UI" },
         { value: "ant", label: "Ant Design" },
       ],
-      // Optionally provide conditional options:
-      conditionalOptions: {
-        fieldName: "role",
-        fn: async (role: string) => {
-          if (role === "frontend") {
-            return [
-              { value: "react", label: "React" },
-              { value: "vue", label: "Vue" },
-            ];
-          }
-          return [];
-        },
-      },
-      // (If your form provides the value of the "role" field, pass it as conditionalValue)
     },
   },
   {
@@ -204,7 +155,7 @@ const technicalProfile: MagicField[] = [
       label: "Experience Level",
       className: "",
       placeholder: "Select your experience level",
-      validation: z.string().min(3, "Please select a experience level"),
+      validation: z.string().min(3, "Please select an experience level"),
       options: () => [
         { label: "Beginner", value: "Beginner" },
         { label: "Intermediate", value: "Intermediate" },
@@ -212,7 +163,6 @@ const technicalProfile: MagicField[] = [
       ],
     },
   },
-
   {
     type: "input",
     RenderComponent: CustomInput,
@@ -222,10 +172,9 @@ const technicalProfile: MagicField[] = [
       label: "Github/Twitter Profile (optional)",
       placeholder: "https://github.com/username",
       containerClassName: "col-span-full",
-      validation: z.string().min(4, "URL must be at least 2 characters"),
+      validation: z.string().url("Please enter a valid URL").or(z.literal("")),
     },
   },
-
   {
     type: "input",
     RenderComponent: CustomInput,
@@ -235,7 +184,7 @@ const technicalProfile: MagicField[] = [
       label: "Portfolio Link (optional)",
       containerClassName: "col-span-full",
       placeholder: "https://portfolio.com",
-      validation: z.string().min(2, "URL must be at least 2 characters"),
+      validation: z.string().url("Please enter a valid URL").or(z.literal("")),
     },
   },
 ];
@@ -249,8 +198,25 @@ const setUpProfile: MagicField[] = [
       name: "username",
       label: "Username",
       placeholder: "username",
-      validation: z.string().min(3, "Username must be at least 2 characters"),
+      validation: z.string().min(3, "Username must be at least 3 characters"),
       beforeInput: <AtSign className="h-4 w-4" />,
+    },
+  },
+  {
+    type: "textarea",
+    RenderComponent: CustomTextArea,
+    config: {
+      cols: 10,
+      name: "bio",
+      label: "Bio (Optional)",
+      className: "col-span-full",
+      placeholder: "Tell us about yourself... ",
+      validation: z
+        .string()
+        .min(10, { message: "Minimum 10 characters" })
+        .max(200, { message: "Maximum 200 characters" })
+        .optional(),
+      rows: 1,
     },
   },
   {
@@ -260,29 +226,51 @@ const setUpProfile: MagicField[] = [
       type: "file",
       label: "Profile Photo",
       placeholder: "Upload your Profile Photo",
-      // validation: z.instanceof(FileList).optional(),
-      validation: z.string().optional(),
-      onChange: (e) => {},
+      validation: z.instanceof(FileList).optional(),
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+        // Handle file change
+      },
     },
     RenderComponent: CustomInput,
   },
-  {
-    type: "textarea",
-    RenderComponent: CustomTextArea,
-    config: {
-      cols: 10,
-      name: "bio" as const,
-      label: "Bio (Optional)",
-      className: "col-span-full",
-      placeholder: "Tell us about yourself... ",
-      validation: z
-        .string()
-        .min(10, { message: "Minimum 10 characters" })
-        .max(200, { message: "Maximum 200 characters" }), // Add max length
-      rows: 1,
-    },
-  },
 ];
+
+const formSchema = z.object({
+  university: z.string().min(2, "Please select a university"),
+  department: z.string().min(2, "Please select a department"),
+  degreeLevel: z.string().min(2, "Please select a degree level"),
+  birthday: z.date().refine((date) => {
+    let age = new Date().getFullYear() - date.getFullYear();
+    const monthDiff = new Date().getMonth() - date.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && new Date().getDate() < date.getDate())
+    ) {
+      age--;
+    }
+    return age >= 16;
+  }, "You must be at least 16 years old"),
+  age: z
+    .number()
+    .min(16, "You must be at least 16 years old")
+    .max(100, "Please enter a valid age"),
+  phone: z.string().min(10, "Number must be at least 10 characters").optional(),
+  skills: z.array(z.string()).min(1, "Select at least one skill"),
+  experience: z.string().min(3, "Please select an experience level"),
+  github: z
+    .string()
+    .url("Please enter a valid URL")
+    .or(z.literal(""))
+    .optional(),
+  portfolio: z
+    .string()
+    .url("Please enter a valid URL")
+    .or(z.literal(""))
+    .optional(),
+  username: z.string().min(3, "Username must be at least 3 characters"),
+  bio: z.string().min(10).max(200).optional(),
+  profilePhoto: z.instanceof(FileList).optional(),
+});
 
 export default function OnboardingForm() {
   const router = useRouter();
@@ -290,16 +278,29 @@ export default function OnboardingForm() {
   const [previousStep, setPreviousStep] = React.useState(0);
   const [showSuccess, setShowSuccess] = React.useState(false);
 
-  const processForm = async (data: any) => {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      university: "",
+      department: "",
+      degreeLevel: "",
+      // birthday: new Date(),
+      phone: "",
+      skills: [],
+      experience: "",
+      github: "",
+      portfolio: "",
+      username: "",
+      bio: "",
+    },
+  });
+
+  const processForm = async (data: z.infer<typeof formSchema>) => {
+    console.log("Form data:", data);
     setShowSuccess(true);
-
-    // const audio = new Audio(successSound);
-    // audio.play();
-
-    // Redirect after animation completes
     setTimeout(() => {
       router.push("/product");
-    }, 2000); // 2 seconds for animation
+    }, 2000);
   };
 
   const getStepStatus = (stepIndex: number) => {
@@ -309,18 +310,13 @@ export default function OnboardingForm() {
   };
 
   const next = async () => {
-    const schema = stepSchemas[step];
-    const result = await schema.safeParseAsync(form.getValues());
+    const fields = steps[step].fields;
+    const output = await form.trigger(
+      fields as Array<keyof z.infer<typeof formSchema>>,
+      { shouldFocus: true }
+    );
 
-    if (!result.success) {
-      result.error.issues.forEach((issue) => {
-        form.setError(issue.path[0] as any, {
-          type: "manual",
-          message: issue.message,
-        });
-      });
-      return;
-    }
+    if (!output) return;
 
     if (step < steps.length - 1) {
       setPreviousStep(step);
@@ -338,60 +334,17 @@ export default function OnboardingForm() {
   if (showSuccess) {
     return (
       <div className="mx-auto flex items-center min-h-screen justify-center w-full px-4 md:px-8">
-        <div className="rounded-lg  flex items-center justify-center w-full ">
+        <div className="rounded-lg flex items-center justify-center w-full ">
           <SuccessAnimation />
         </div>
       </div>
     );
   }
 
-  const stepFields = [personalDetails, technicalProfile, setUpProfile];
-
-  const stepSchemas = stepFields.map((fields) =>
-    z.object(
-      fields.reduce((schemaObj, field) => {
-        schemaObj[field.config.name] = field.config.validation;
-        return schemaObj;
-      }, {} as Record<string, z.ZodTypeAny>)
-    )
-  );
-
-  const form = useForm({
-    // Use the first step's schema as initial resolver
-    resolver: zodResolver(stepSchemas[0]),
-    defaultValues: stepFields.reduce((values, fields) => {
-      fields.forEach((field) => {
-        values[field.config.name] = field.config.defaultValue || "";
-      });
-      return values;
-    }, {} as Record<string, any>),
-  });
-
-  const onSubmit = async (values: any) => {
-    // Validate all steps before submission
-    for (let i = 0; i < stepSchemas.length; i++) {
-      const result = await stepSchemas[i].safeParseAsync(values);
-      if (!result.success) {
-        result.error.issues.forEach((issue) => {
-          form.setError(issue.path[0] as any, {
-            type: "manual",
-            message: issue.message,
-          });
-        });
-        // Jump to the step with errors
-        setStep(i);
-        return;
-      }
-    }
-
-    // If all validations pass, process the form
-    processForm(values);
-  };
-
   return (
-    <div className="mx-auto flex max-sm:py-4 min-h-screen items-center justify-center max-w-6xl px-4 md:px-8">
-      <div className="rounded-lg w-full border  h-full shadow-sm">
-        <div className="grid md:grid-cols-[300px_1fr] h-full  w-full bg-primary-foreground rounded-lg">
+    <div className="mx-auto flex min-h-screen items-center justify-center max-w-6xl px-4 md:px-8">
+      <div className="rounded-lg w-full border h-full shadow-sm">
+        <div className="grid md:grid-cols-[300px_1fr] h-full w-full bg-primary-foreground rounded-lg">
           {/* Left sidebar */}
           <div className="w-full p-6">
             <div className="space-y-2">
@@ -407,16 +360,13 @@ export default function OnboardingForm() {
                 <div
                   key={s.id}
                   className={cn(
-                    "flex items-center   gap-3 rounded-md p-3 transition-colors",
+                    "flex items-center gap-3 rounded-md p-3 transition-colors",
                     step === i && "bg-secondary"
                   )}
                 >
                   <StepIndicator status={getStepStatus(i)} />
-                  <div className="text-sm  font-medium">
-                    <p className="  align-middle">{s.name}</p>
-                    {/* <div className="text-xs text-muted-foreground">
-                      {s.description}
-                    </div> */}
+                  <div className="text-sm font-medium">
+                    <p className="align-middle">{s.name}</p>
                   </div>
                 </div>
               ))}
@@ -424,10 +374,9 @@ export default function OnboardingForm() {
           </div>
 
           {/* Main content */}
-
           <div className="bg-white border m-3 rounded-md">
             <div className="">
-              <div className="flex items-center justify-between border-b  p-6 pb-4">
+              <div className="flex items-center justify-between border-b p-6 pb-4">
                 <h2 className="text-lg font-medium">{steps[step].name}</h2>
                 <div className="flex items-center gap-4">
                   <span className="text-sm text-muted-foreground">
@@ -440,10 +389,10 @@ export default function OnboardingForm() {
                 </div>
               </div>
 
-              <div className=" w-full p-6">
+              <div className="w-full p-6">
                 <Form {...form}>
                   <form
-                    onSubmit={form.handleSubmit(onSubmit)}
+                    onSubmit={form.handleSubmit(processForm)}
                     className="space-y-6 pt-6"
                   >
                     <AnimatePresence mode="wait">
@@ -455,7 +404,7 @@ export default function OnboardingForm() {
                         transition={{ duration: 0.2 }}
                       >
                         {step === 0 && (
-                          <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-6">
+                          <div className="grid grid-cols-2 gap-6">
                             {personalDetails.map(
                               ({ config, RenderComponent }, i) => (
                                 <RenderComponent
@@ -465,14 +414,11 @@ export default function OnboardingForm() {
                                 />
                               )
                             )}
-                            {/* <Button type="submit">Submit</Button> */}
                           </div>
                         )}
 
                         {step === 1 && (
-                          <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-6">
-                            {/* Primary Skills */}
-
+                          <div className="grid grid-cols-2 gap-6">
                             {technicalProfile.map(
                               ({ config, RenderComponent }, i) => (
                                 <RenderComponent
@@ -486,9 +432,7 @@ export default function OnboardingForm() {
                         )}
 
                         {step === 2 && (
-                          <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-6">
-                            {/* Project Type */}
-
+                          <div className="grid gap-6">
                             {setUpProfile.map(
                               ({ config, RenderComponent }, i) => (
                                 <RenderComponent
@@ -502,7 +446,8 @@ export default function OnboardingForm() {
                         )}
                       </motion.div>
                     </AnimatePresence>
-                    <div className="flex gap-2  pt-4">
+
+                    <div className="flex gap-2 pt-4">
                       {step > 0 && (
                         <Button type="button" onClick={prev} variant="outline">
                           <ChevronLeft className="mr-2 h-4 w-4" />
