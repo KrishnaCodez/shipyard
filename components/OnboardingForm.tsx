@@ -47,6 +47,7 @@ import CustomTextArea from "./custom/textarea";
 import { CustomMultiSelect } from "./custom/multiselect";
 import CustomSelect from "./custom/select";
 import CustomInput from "./custom/input";
+import { ArrayToZodResolver } from "@/lib/ArrayToZod";
 
 const steps = [
   {
@@ -132,7 +133,7 @@ const personalDetails: MagicField[] = [
       name: "birthday",
       label: "Birthday",
       placeholder: "Select your birthday",
-      validation: z.string().min(2, "First name must be at least 2 characters"),
+      validation: z.date().optional(),
       defaultValue: "",
     },
   },
@@ -162,6 +163,7 @@ const technicalProfile: MagicField[] = [
       placeholder: "Select skills...",
       validation: z.array(z.string()).min(1, "Select at least two skill"),
       className: "w-full",
+      defaultValue: [] as string[],
       // Provide your options as an async function:
       options: async () => [
         { value: "react", label: "React" },
@@ -252,6 +254,19 @@ const setUpProfile: MagicField[] = [
     },
   },
   {
+    type: "input",
+    config: {
+      name: "profilePhoto",
+      type: "file",
+      label: "Profile Photo",
+      placeholder: "Upload your Profile Photo",
+      // validation: z.instanceof(FileList).optional(),
+      validation: z.string().optional(),
+      onChange: (e) => {},
+    },
+    RenderComponent: CustomInput,
+  },
+  {
     type: "textarea",
     RenderComponent: CustomTextArea,
     config: {
@@ -267,23 +282,7 @@ const setUpProfile: MagicField[] = [
       rows: 1,
     },
   },
-
-  {
-    type: "input",
-    config: {
-      name: "profilePhoto",
-      type: "file",
-      label: "Profile Photo",
-      placeholder: "Upload your Profile Photo",
-      validation: z.instanceof(FileList).optional(),
-      onChange: (e) => {},
-    },
-    RenderComponent: CustomInput,
-  },
 ];
-const formSchema = z.object({
-  // Step 1
-});
 
 export default function OnboardingForm() {
   const router = useRouter();
@@ -291,19 +290,7 @@ export default function OnboardingForm() {
   const [previousStep, setPreviousStep] = React.useState(0);
   const [showSuccess, setShowSuccess] = React.useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      age: "",
-      primarySkills: [],
-      interests: [],
-      preferredRoles: [],
-      projectType: [],
-      collaborationMode: [],
-    },
-  });
-
-  const processForm = async (data: z.infer<typeof formSchema>) => {
+  const processForm = async (data: any) => {
     setShowSuccess(true);
 
     // const audio = new Audio(successSound);
@@ -322,10 +309,18 @@ export default function OnboardingForm() {
   };
 
   const next = async () => {
-    const fields = steps[step].fields;
-    const output = await form.trigger(fields as any, { shouldFocus: true });
+    const schema = stepSchemas[step];
+    const result = await schema.safeParseAsync(form.getValues());
 
-    if (!output) return;
+    if (!result.success) {
+      result.error.issues.forEach((issue) => {
+        form.setError(issue.path[0] as any, {
+          type: "manual",
+          message: issue.message,
+        });
+      });
+      return;
+    }
 
     if (step < steps.length - 1) {
       setPreviousStep(step);
@@ -350,8 +345,51 @@ export default function OnboardingForm() {
     );
   }
 
+  const stepFields = [personalDetails, technicalProfile, setUpProfile];
+
+  const stepSchemas = stepFields.map((fields) =>
+    z.object(
+      fields.reduce((schemaObj, field) => {
+        schemaObj[field.config.name] = field.config.validation;
+        return schemaObj;
+      }, {} as Record<string, z.ZodTypeAny>)
+    )
+  );
+
+  const form = useForm({
+    // Use the first step's schema as initial resolver
+    resolver: zodResolver(stepSchemas[0]),
+    defaultValues: stepFields.reduce((values, fields) => {
+      fields.forEach((field) => {
+        values[field.config.name] = field.config.defaultValue || "";
+      });
+      return values;
+    }, {} as Record<string, any>),
+  });
+
+  const onSubmit = async (values: any) => {
+    // Validate all steps before submission
+    for (let i = 0; i < stepSchemas.length; i++) {
+      const result = await stepSchemas[i].safeParseAsync(values);
+      if (!result.success) {
+        result.error.issues.forEach((issue) => {
+          form.setError(issue.path[0] as any, {
+            type: "manual",
+            message: issue.message,
+          });
+        });
+        // Jump to the step with errors
+        setStep(i);
+        return;
+      }
+    }
+
+    // If all validations pass, process the form
+    processForm(values);
+  };
+
   return (
-    <div className="mx-auto flex min-h-screen items-center justify-center max-w-6xl px-4 md:px-8">
+    <div className="mx-auto flex max-sm:py-4 min-h-screen items-center justify-center max-w-6xl px-4 md:px-8">
       <div className="rounded-lg w-full border  h-full shadow-sm">
         <div className="grid md:grid-cols-[300px_1fr] h-full  w-full bg-primary-foreground rounded-lg">
           {/* Left sidebar */}
@@ -405,7 +443,7 @@ export default function OnboardingForm() {
               <div className=" w-full p-6">
                 <Form {...form}>
                   <form
-                    onSubmit={form.handleSubmit(processForm)}
+                    onSubmit={form.handleSubmit(onSubmit)}
                     className="space-y-6 pt-6"
                   >
                     <AnimatePresence mode="wait">
@@ -417,7 +455,7 @@ export default function OnboardingForm() {
                         transition={{ duration: 0.2 }}
                       >
                         {step === 0 && (
-                          <div className="grid grid-cols-2 gap-6">
+                          <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-6">
                             {personalDetails.map(
                               ({ config, RenderComponent }, i) => (
                                 <RenderComponent
@@ -432,7 +470,7 @@ export default function OnboardingForm() {
                         )}
 
                         {step === 1 && (
-                          <div className="grid grid-cols-2  gap-6">
+                          <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-6">
                             {/* Primary Skills */}
 
                             {technicalProfile.map(
@@ -448,7 +486,7 @@ export default function OnboardingForm() {
                         )}
 
                         {step === 2 && (
-                          <div className="grid gap-6">
+                          <div className="grid grid-cols-2 max-sm:grid-cols-1 gap-6">
                             {/* Project Type */}
 
                             {setUpProfile.map(
@@ -464,7 +502,6 @@ export default function OnboardingForm() {
                         )}
                       </motion.div>
                     </AnimatePresence>
-
                     <div className="flex gap-2  pt-4">
                       {step > 0 && (
                         <Button type="button" onClick={prev} variant="outline">
