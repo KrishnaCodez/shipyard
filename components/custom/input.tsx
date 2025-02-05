@@ -15,6 +15,7 @@ const CustomInput = (props: InputFieldProps) => {
       control={props.control}
       name={props.name as string}
       render={({ field }) => {
+        const { value, ...restField } = field;
         const hasBefore = !!props.beforeInput;
         const hasAfter = !!props.afterInput;
 
@@ -43,14 +44,17 @@ const CustomInput = (props: InputFieldProps) => {
                 )}
                 placeholder={props.placeholder}
                 type={props.type}
-                value={field.value ?? ""}
+                value={props.type === "file" ? undefined : value ?? ""}
                 onClick={props.onClick}
                 onChange={(e) => {
                   props.onChange?.(e);
                   if (props.type === "number") {
                     field.onChange(e.currentTarget.valueAsNumber);
                   } else if (props.type === "file") {
-                    field.onChange(e.target?.files ?? undefined);
+                    const files = e.target.files
+                      ? Array.from(e.target.files)
+                      : [];
+                    field.onChange(files); // Pass the array of File objects
                   } else {
                     field.onChange(e.currentTarget.value);
                   }
