@@ -22,6 +22,7 @@ import CustomTextArea from "./custom/textarea";
 import { CustomMultiSelect } from "./custom/multiselect";
 import CustomSelect from "./custom/select";
 import CustomInput from "./custom/input";
+import { onBoardDetails } from "@/utils/actions";
 
 const steps = [
   {
@@ -236,40 +237,25 @@ const setUpProfile: MagicField[] = [
 ];
 
 const formSchema = z.object({
+  // Define all fields here
   university: z.string().min(2, "Please select a university"),
   department: z.string().min(2, "Please select a department"),
   degreeLevel: z.string().min(2, "Please select a degree level"),
-  birthday: z.date().refine((date) => {
-    let age = new Date().getFullYear() - date.getFullYear();
-    const monthDiff = new Date().getMonth() - date.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && new Date().getDate() < date.getDate())
-    ) {
-      age--;
-    }
-    return age >= 16;
-  }, "You must be at least 16 years old"),
-  age: z
-    .number()
-    .min(16, "You must be at least 16 years old")
-    .max(100, "Please enter a valid age"),
+  birthday: z.date(),
   phone: z.string().min(10, "Number must be at least 10 characters").optional(),
   skills: z.array(z.string()).min(1, "Select at least one skill"),
   experience: z.string().min(3, "Please select an experience level"),
-  github: z
-    .string()
-    .url("Please enter a valid URL")
-    .or(z.literal(""))
-    .optional(),
-  portfolio: z
-    .string()
-    .url("Please enter a valid URL")
-    .or(z.literal(""))
-    .optional(),
+  github: z.string().url("Please enter a valid URL").or(z.literal("")),
+  portfolio: z.string().url("Please enter a valid URL").or(z.literal("")),
   username: z.string().min(3, "Username must be at least 3 characters"),
   bio: z.string().min(10).max(200).optional(),
-  profilePhoto: z.instanceof(FileList).optional(),
+  profilePhoto: z
+    .any()
+    .refine((files) => {
+      if (!(files instanceof FileList)) return true;
+      return files?.[0]?.size <= 5 * 1024 * 1024; // 5MB limit
+    }, "Max file size is 5MB")
+    .optional(),
 });
 
 export default function OnboardingForm() {
@@ -297,10 +283,34 @@ export default function OnboardingForm() {
 
   const processForm = async (data: z.infer<typeof formSchema>) => {
     console.log("Form data:", data);
-    setShowSuccess(true);
-    setTimeout(() => {
-      router.push("/product");
-    }, 2000);
+
+    const formData = new FormData();
+
+    // Append form fields
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === "profilePhoto" && value instanceof FileList) {
+        formData.append("profilePhoto", value[0]);
+      } else if (Array.isArray(value)) {
+        value.forEach((v) => formData.append(key, v));
+      } else if (value instanceof Date) {
+        formData.append(key, value.toISOString());
+      } else if (value) {
+        formData.append(key, value.toString());
+      }
+    });
+
+    try {
+      const response = await onBoardDetails(formData);
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      setShowSuccess(true);
+      setTimeout(() => {
+        router.push("/");
+      }, 2000);
+    } catch (error) {
+      console.error("Form submission error:", error);
+    }
   };
 
   const getStepStatus = (stepIndex: number) => {

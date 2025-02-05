@@ -16,12 +16,13 @@ datasource db {
 model User {
   id                String            @id @default(cuid())
   clerkId           String?           @unique
-  image             String
-  name              String
+  image             String            @default("")
+  firstName         String            @default("")
+  lastName          String            @default("")
   email             String            @unique
-  // password      String
-  username          String            @unique
-  bio               String?
+  username          String
+  bio               String?           @db.VarChar(200)
+  dob               DateTime?
   profilePictureURL String?
   personalDetails   PersonalDetails?
   technicalProfile  TechnicalProfile?
@@ -32,8 +33,9 @@ model User {
   upvotes           Upvote[]
   products          Product[]
   comments          Comment[]
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model PersonalDetails {
@@ -43,7 +45,6 @@ model PersonalDetails {
   university     String
   department     String
   degreeLevel    DegreeLevel
-  age            Int
   phone          String?
   bio            String?     @db.VarChar(200)
   profilePicture String?

@@ -29,24 +29,31 @@ export async function POST(req: Request) {
     const eventType = evt.type;
 
     if (eventType === "user.created" || eventType === "user.updated") {
-      const { id, image_url, first_name, last_name, email_addresses } =
-        evt.data;
+      const {
+        id,
+        image_url,
+        first_name,
+        last_name,
+        email_addresses,
+        username,
+      } = evt.data;
       console.log("userId:", evt.data.id);
 
       await prisma.user.upsert({
         where: { clerkId: id },
         update: {
           image: image_url || "",
-          name: [first_name, last_name].filter(Boolean).join(" ") || "Unknown",
 
           email: email_addresses[0].email_address,
         },
         create: {
           clerkId: id,
           image: image_url || "",
-          name: [first_name, last_name].filter(Boolean).join(" ") || "Unknown",
+          firstName: first_name ?? "",
+          lastName: last_name ?? "",
           email: email_addresses[0].email_address,
           role: "USER",
+          username: username || "",
           onboarded: false,
         },
       });
