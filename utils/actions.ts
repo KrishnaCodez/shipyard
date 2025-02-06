@@ -59,14 +59,20 @@ export async function onBoardDetails(formData: FormData) {
     return { error: "Invalid form data" };
   }
 
-  console.log("Form data received:", {
-    username: formData.get("username"),
-    skills: formData.getAll("skills"),
-    experience: formData.get("experience"),
-  });
+  // console.log("Form data received:", {
+  //   username: formData.get("username"),
+  //   skills: formData.getAll("skills"),
+  //   experience: formData.get("experience"),
+  //   birthday: formData.get("birthday"),
+  //   profilePhoto: formData.get("profilePhoto"),
+  // });
 
   try {
     const profilePhoto = formData.get("profilePhoto");
+    const degreeLevel = (formData.get("degreeLevel") as string).toUpperCase();
+    const experienceLevel = (
+      formData.get("experience") as string
+    ).toUpperCase();
 
     const userProfile = await prisma.user.update({
       where: {
@@ -82,7 +88,7 @@ export async function onBoardDetails(formData: FormData) {
           create: {
             university: formData.get("university") as string,
             department: formData.get("department") as string,
-            degreeLevel: formData.get("degreeLevel") as DegreeLevel,
+            degreeLevel: degreeLevel as DegreeLevel,
             phone: formData.get("phone") as string,
             bio: formData.get("bio") as string,
             profilePicture: formData.get("profilePhoto") as string,
@@ -91,7 +97,7 @@ export async function onBoardDetails(formData: FormData) {
         technicalProfile: {
           create: {
             primarySkills: formData.getAll("skills") as string[],
-            experienceLevel: formData.get("experience") as ExperienceLevel,
+            experienceLevel: experienceLevel as ExperienceLevel,
             githubUrl: formData.get("github") as string,
             portfolioUrl: formData.get("portfolio") as string,
           },
