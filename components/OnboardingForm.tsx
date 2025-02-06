@@ -301,16 +301,13 @@ export default function OnboardingForm() {
   const processForm = async (data: z.infer<typeof formSchema>) => {
     let profilePhotoUrl = "";
     if (data.profilePhoto && data.profilePhoto.length > 0) {
-      const file = data.profilePhoto[0]; // Get the first file from the array
-      profilePhotoUrl = await uploadImage(file, data.username); // Pass the File object
-      console.log("Profile photo uploaded. URL:", profilePhotoUrl);
+      const file = data.profilePhoto[0];
+      profilePhotoUrl = await uploadImage(file, data.username);
     }
-
-    console.log("Form data:", data);
 
     const formData = new FormData();
 
-    // Append form fields
+    // Append form fields with proper Date handling
     Object.entries({
       ...data,
       profilePhoto: profilePhotoUrl,
@@ -319,6 +316,8 @@ export default function OnboardingForm() {
         value.forEach((v) => formData.append(key, v));
       } else if (value instanceof File) {
         formData.append(key, value);
+      } else if (value instanceof Date) {
+        formData.append(key, value.toISOString()); // Convert Date to ISO string
       } else if (value !== null && value !== undefined) {
         formData.append(key, value.toString());
       }
@@ -326,13 +325,9 @@ export default function OnboardingForm() {
 
     try {
       const response = await onBoardDetails(formData);
-      if (response.error) {
-        throw new Error(response.error);
-      }
+      if (response.error) throw new Error(response.error);
       setShowSuccess(true);
-      setTimeout(() => {
-        router.push("/");
-      }, 2000);
+      setTimeout(() => router.push("/"), 2000);
     } catch (error) {
       console.error("Form submission error:", error);
     }
