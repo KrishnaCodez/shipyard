@@ -3,7 +3,7 @@
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AtSign, ChevronLeft, ChevronRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,9 +21,11 @@ import CustomTextArea from "./custom/textarea";
 import { CustomMultiSelect } from "./custom/multiselect";
 import CustomSelect from "./custom/select";
 import CustomInput from "./custom/input";
-import { onBoardDetails } from "@/utils/actions";
+import { checkOnboarding, onBoardDetails } from "@/utils/actions";
 import ImageKit from "imagekit";
-
+import { useAuth, useSession } from "@clerk/nextjs";
+import { prisma } from "@/lib/prisma";
+import { useState, useEffect } from "react";
 const steps = [
   {
     id: "step-1",
@@ -254,10 +256,16 @@ const formSchema = z.object({
 });
 
 export default function OnboardingForm() {
+  const { userId, isLoaded } = useAuth();
+
+  const { session } = useSession();
+
   const router = useRouter();
-  const [step, setStep] = React.useState(0);
-  const [previousStep, setPreviousStep] = React.useState(0);
-  const [showSuccess, setShowSuccess] = React.useState(false);
+  const [step, setStep] = useState(0);
+  const [previousStep, setPreviousStep] = useState(0);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -275,6 +283,43 @@ export default function OnboardingForm() {
       bio: "",
     },
   });
+
+  useEffect(() => {
+    if (!isLoaded) {
+      return;
+    }
+    if (!userId || !session) {
+      router.replace("/sign-in");
+      return;
+    }
+
+    const fetchOnboardingStatus = async () => {
+      try {
+        const data = await checkOnboarding();
+        if (data.isOnboarded) {
+          setIsOnboarded(true);
+          router.replace("/product");
+        } else {
+          setIsOnboarded(false);
+        }
+      } catch (error) {
+        console.error("Error checking onboarding:", error);
+        router.replace("/onboarding");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOnboardingStatus();
+  }, [isLoaded, userId, session, router]);
+
+  if (loading || !isLoaded || isOnboarded === null) {
+    return <p>Loading...</p>;
+  }
+
+  if (isOnboarded) {
+    return null;
+  }
 
   const uploadImage = async (file: File, fileName: string) => {
     console.log("Starting image upload...");
