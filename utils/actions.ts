@@ -7,6 +7,7 @@ import { DegreeLevel, ExperienceLevel } from "@prisma/client";
 import { profile } from "console";
 import { revalidatePath } from "next/cache";
 import { calculateAge } from "./calcAge";
+import { NextResponse } from "next/server";
 
 export async function getUser(userId: string) {
   return prisma.user.findUnique({
@@ -118,4 +119,16 @@ export async function onBoardDetails(formData: FormData) {
     }
     return { error: "Failed to save onboarding details" };
   }
+}
+
+export async function checkOnboarding() {
+  const { userId } = await auth();
+  if (!userId) return { onboarded: false };
+
+  const user = await prisma.user.findUnique({
+    where: { clerkId: userId },
+    select: { onboarded: true },
+  });
+
+  return { isOnboarded: user?.onboarded || false };
 }
