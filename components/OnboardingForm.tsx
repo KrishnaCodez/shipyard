@@ -313,43 +313,6 @@ export default function OnboardingForm() {
     );
   }
 
-  // useEffect(() => {
-  //   if (!isLoaded) {
-  //     return;
-  //   }
-  //   if (!userId || !session) {
-  //     router.replace("/sign-in");
-  //     return;
-  //   }
-
-  //   const fetchOnboardingStatus = async () => {
-  //     try {
-  //       const data = await checkOnboarding();
-  //       if (data.isOnboarded) {
-  //         setIsOnboarded(true);
-  //         router.replace("/product");
-  //       } else {
-  //         setIsOnboarded(false);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error checking onboarding:", error);
-  //       router.replace("/onboarding");
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchOnboardingStatus();
-  // }, [isLoaded, userId, session, router]);
-
-  // if (loading || !isLoaded || isOnboarded === null) {
-  //   return <p>Loading...</p>;
-  // }
-
-  // if (isOnboarded) {
-  //   return null;
-  // }
-
   const uploadImage = async (file: File, fileName: string) => {
     console.log("Starting image upload...");
     const imagekit = new ImageKit({
@@ -411,7 +374,7 @@ export default function OnboardingForm() {
       // });
 
       setShowSuccess(true);
-      setTimeout(() => router.push("/"), 2000);
+      setTimeout(() => router.push("/product"), 2000);
     } catch (error) {
       console.error("Form submission error:", error);
     }

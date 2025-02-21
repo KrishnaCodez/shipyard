@@ -1,33 +1,18 @@
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { MagicField } from "@/utils/types";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { ArrayToZodResolver } from "@/lib/ArrayToZod";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import FieldTest from "@/components/FieldTest";
 import OnboardingForm from "@/components/OnboardingForm";
-import { auth, currentUser } from "@clerk/nextjs/server";
-import { Loader } from "lucide-react";
+import { auth } from "@clerk/nextjs/server";
 
 export default async function OnboardingPage() {
-  // const { userId, sessionClaims } = await auth();
+  const { userId, sessionClaims } = await auth();
 
-  // if (!userId) redirect("/sign-in");
-  // const isOnboarded = (sessionClaims as ClerkUserMetadata)?.publicMetadata
-  //   ?.onBoarded;
+  if (!userId) redirect("/sign-in");
 
-  // if (isOnboarded) {
-  //   redirect("/product");
-  // }
+  const isOnboarded = (sessionClaims as ClerkUserMetadata)?.publicMetadata
+    ?.onBoarded;
+
+  if (isOnboarded) {
+    redirect("/product");
+  }
 
   return (
     <div>

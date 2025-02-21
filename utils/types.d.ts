@@ -4,14 +4,13 @@ import { ClerkState } from "@clerk/nextjs/server";
 import { JwtPayload } from "@clerk/nextjs/server";
 
 // Create a type for the roles
-export type Roles = "admin" | "user";
+export type Roles = "ADMIN" | "USER";
 
 declare global {
   interface ClerkUserMetadata extends JwtPayload {
     publicMetadata?: {
-      // Note the capital 'D'
-      onBoarded?: boolean; // Note the capital 'B'
-      role?: "admin" | "user";
+      onBoarded?: boolean;
+      role?: "ADMIN" | "USER";
     };
   }
 }

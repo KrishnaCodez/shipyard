@@ -118,13 +118,18 @@ export async function onBoardDetails(formData: FormData) {
       },
     });
 
-    // Update Clerk metadata
-    // await clerkClient.users.updateUser(userId, {
-    //   publicMetadata: {
-    //     onBoarded: true,
-    //     role: "user"
-    //   }
-    // });
+    const clerk = await clerkClient();
+
+    await clerk.users.updateUserMetadata(userId, {
+      publicMetadata: {
+        onBoarded: true,
+        role: "USER",
+      },
+      privateMetadata: {},
+    });
+
+    const user = await clerk.users.getUser(userId);
+    console.log("Updated metadata:", user.publicMetadata);
 
     revalidatePath("/");
     return { success: true, data: userProfile };
