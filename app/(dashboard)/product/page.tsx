@@ -12,8 +12,8 @@ export default async function Dashboard() {
   const onboardingStatus = (sessionClaims as ClerkUserMetadata)?.publicMetadata
     ?.onBoarded;
 
-  console.log("User Onboarding Status:", onboardingStatus);
-  console.log("Full Session Claims:", sessionClaims);
+  // console.log("User Onboarding Status:", onboardingStatus);
+  // console.log("Full Session Claims:", sessionClaims);
 
   // console.log("Clerk Session Data:", {
   //    sessionClaims as ClerkUserMetadata?.publicMetadata?.onboarded,

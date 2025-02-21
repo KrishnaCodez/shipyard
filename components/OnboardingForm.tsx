@@ -27,6 +27,7 @@ import { useAuth, useSession } from "@clerk/nextjs";
 import { prisma } from "@/lib/prisma";
 import { useState, useEffect } from "react";
 import { onBoardDetails } from "@/utils/actions/onBoardDetails";
+import { toast } from "sonner";
 
 const steps = [
   {
@@ -287,6 +288,7 @@ export default function OnboardingForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -305,41 +307,86 @@ export default function OnboardingForm() {
     },
   });
 
-  if (!isLoaded) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader className="animate-spin h-5 w-5" />
-      </div>
-    );
-  }
-
   const uploadImage = async (file: File, fileName: string) => {
-    console.log("Starting image upload...");
-    const imagekit = new ImageKit({
-      publicKey: process.env.NEXT_PUBLIC_PUBLIC_KEY ?? "",
-      privateKey: process.env.NEXT_PUBLIC_PRIVATE_KEY ?? "",
-      urlEndpoint: process.env.NEXT_PUBLIC_URL_ENDPOINT ?? "",
+    setIsUploading(true);
+
+    const imageUploadPromise = async () => {
+      try {
+        // Initialize ImageKit
+        const imagekit = new ImageKit({
+          publicKey: process.env.NEXT_PUBLIC_PUBLIC_KEY ?? "",
+          privateKey: process.env.NEXT_PUBLIC_PRIVATE_KEY ?? "",
+          urlEndpoint: process.env.NEXT_PUBLIC_URL_ENDPOINT ?? "",
+        });
+
+        // Convert to base64
+        const fileBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = (error) => reject(error);
+        });
+
+        // Upload to ImageKit
+        const uploadedFile = await imagekit.upload({
+          file: fileBase64,
+          fileName: fileName,
+        });
+
+        console.log("Image upload completed. URL:", uploadedFile.url);
+
+        return {
+          url: uploadedFile.url,
+          fileName: uploadedFile.name,
+        };
+      } catch (error) {
+        throw new Error(
+          error instanceof Error ? error.message : "Failed to upload image"
+        );
+      } finally {
+        setIsUploading(false);
+      }
+    };
+
+    return toast.promise(imageUploadPromise, {
+      loading: "Uploading your profile picture...",
+      success: (data) => {
+        return `Successfully uploaded`;
+      },
+      error: (error) => {
+        return `Upload failed: ${error.message}`;
+      },
     });
-    const fileBase64 = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-    console.log("File converted to base64, uploading...");
-    const uploadedFile = await imagekit.upload({
-      file: fileBase64,
-      fileName: fileName,
-    });
-    console.log("Image upload completed. URL:", uploadedFile.url);
-    return uploadedFile.url;
   };
+
+  // useEffect(() => {
+  //   const subscription = form.watch(async (value, { name }) => {
+  //     if (name === "profilePhoto" && value.profilePhoto?.[0]) {
+  //       const file = value.profilePhoto[0];
+  //       try {
+  //         const uploadResult = await uploadImage(
+  //           file,
+  //           value.username || "profile"
+  //         );
+  //         form.setValue("profilePhoto", uploadResult.url);
+  //       } catch (error) {
+  //         form.setError("profilePhoto", {
+  //           type: "manual",
+  //           message: "Failed to upload image",
+  //         });
+  //       }
+  //     }
+  //   });
+
+  //   return () => subscription.unsubscribe();
+  // }, [form.watch]);
 
   const processForm = async (data: z.infer<typeof formSchema>) => {
     let profilePhotoUrl = "";
     if (data.profilePhoto && data.profilePhoto.length > 0) {
       const file = data.profilePhoto[0];
-      profilePhotoUrl = await uploadImage(file, data.username);
+      const uploadResult = await uploadImage(file, data.username);
+      profilePhotoUrl = uploadResult.url;
     }
 
     const formData = new FormData();
@@ -364,18 +411,13 @@ export default function OnboardingForm() {
       const response = await onBoardDetails(formData);
       if (response.error) throw new Error(response.error);
 
-      // const clerk = await clerkClient();
-
-      // await clerk.users.updateUserMetadata(userId || "", {
-      //   publicMetadata: {
-      //     role: "user",
-      //     onBoarded: true,
-      //   },
-      // });
-
       setShowSuccess(true);
       setTimeout(() => router.push("/product"), 2000);
     } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Form submission failed"
+      );
+
       console.error("Form submission error:", error);
     }
   };
@@ -407,6 +449,14 @@ export default function OnboardingForm() {
       setStep(step - 1);
     }
   };
+
+  if (!isLoaded) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader className="animate-spin h-5 w-5" />
+      </div>
+    );
+  }
 
   if (showSuccess) {
     return (
@@ -542,8 +592,19 @@ export default function OnboardingForm() {
                         </Button>
                       )}
                       {step === steps.length - 1 && (
-                        <Button type="submit" className="ml-auto">
-                          Complete
+                        <Button
+                          type="submit"
+                          disabled={isUploading}
+                          className="ml-auto"
+                        >
+                          {isUploading ? (
+                            <>
+                              <Loader className="mr-2 h-4 w-4 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            "Complete"
+                          )}
                         </Button>
                       )}
                     </div>
