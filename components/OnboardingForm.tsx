@@ -401,14 +401,14 @@ export default function OnboardingForm() {
       const response = await onBoardDetails(formData);
       if (response.error) throw new Error(response.error);
 
-      const clerk = await clerkClient();
+      // const clerk = await clerkClient();
 
-      await clerk.users.updateUserMetadata(userId || "", {
-        publicMetadata: {
-          role: "user",
-          onBoarded: true,
-        },
-      });
+      // await clerk.users.updateUserMetadata(userId || "", {
+      //   publicMetadata: {
+      //     role: "user",
+      //     onBoarded: true,
+      //   },
+      // });
 
       setShowSuccess(true);
       setTimeout(() => router.push("/"), 2000);
