@@ -60,13 +60,13 @@ export async function onBoardDetails(formData: FormData) {
     return { error: "Invalid form data" };
   }
 
-  console.log("Form data received:", {
-    username: formData.get("username"),
-    skills: formData.getAll("skills"),
-    experience: formData.get("experience"),
-    birthday: formData.get("birthday"),
-    profilePhoto: formData.get("profilePhoto"),
-  });
+  // console.log("Form data received:", {
+  //   username: formData.get("username"),
+  //   skills: formData.getAll("skills"),
+  //   experience: formData.get("experience"),
+  //   birthday: formData.get("birthday"),
+  //   profilePhoto: formData.get("profilePhoto"),
+  // });
 
   try {
     const profilePhoto = formData.get("profilePhoto");
