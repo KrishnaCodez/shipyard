@@ -43,7 +43,6 @@ export async function POST(req: Request) {
         where: { clerkId: id },
         update: {
           image: image_url || "",
-
           email: email_addresses[0].email_address,
         },
         create: {

@@ -5,9 +5,12 @@ import { string, z, ZodEnum, ZodNativeEnum, ZodNumber, ZodString } from "zod";
 export type Roles = "admin" | "user";
 
 declare global {
-  export interface Session {
-    role?: "admin" | "user";
-    onBoarded?: boolean;
+  interface ClerkUserMetadata extends JwtPayload {
+    publicMetadata?: {
+      // Note the capital 'D'
+      onBoarded?: boolean; // Note the capital 'B'
+      role?: "admin" | "user";
+    };
   }
 }
 

@@ -21,11 +21,13 @@ import CustomTextArea from "./custom/textarea";
 import { CustomMultiSelect } from "./custom/multiselect";
 import CustomSelect from "./custom/select";
 import CustomInput from "./custom/input";
-import { checkOnboarding, onBoardDetails } from "@/utils/actions";
+import { checkOnboarding } from "@/utils/actions";
 import ImageKit from "imagekit";
 import { useAuth, useSession } from "@clerk/nextjs";
 import { prisma } from "@/lib/prisma";
 import { useState, useEffect } from "react";
+import { onBoardDetails } from "@/utils/actions/onBoardDetails";
+
 const steps = [
   {
     id: "step-1",
@@ -245,13 +247,33 @@ const formSchema = z.object({
   department: z.string().min(2, "Please select a department"),
   degreeLevel: z.string().min(2, "Please select a degree level"),
   birthday: z.date(),
-  phone: z.string().min(10, "Number must be at least 10 characters").optional(),
-  skills: z.array(z.string()).min(1, "Select at least one skill"),
+  phone: z
+    .string()
+    .min(10, "Number must be at least 10 characters")
+    .regex(
+      /^[0-9+\-\s]+$/,
+      "Phone number can only contain numbers, +, -, and spaces"
+    )
+    .optional(),
+
+  skills: z.array(z.string()).min(3, "Select at least three skill"),
   experience: z.string().min(3, "Please select an experience level"),
   github: z.string().url("Please enter a valid URL").or(z.literal("")),
   portfolio: z.string().url("Please enter a valid URL").or(z.literal("")),
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  bio: z.string().min(10).max(200).optional(),
+  username: z
+    .string()
+    .min(3, "Username must be between 3 and 15 characters")
+    .max(15, "Username must be between 3 and 15 characters")
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username can only contain letters, numbers, and underscores"
+    ),
+
+  bio: z
+    .string()
+    .min(10, "Add atleast 10 characters")
+    .max(200, "Maximum 200 characters allowed")
+    .optional(),
   profilePhoto: z.array(z.instanceof(File)).optional(),
 });
 
