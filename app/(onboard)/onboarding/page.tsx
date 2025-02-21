@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { MagicField } from "@/utils/types";
@@ -16,20 +15,19 @@ import {
 } from "@/components/ui/form";
 import FieldTest from "@/components/FieldTest";
 import OnboardingForm from "@/components/OnboardingForm";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { Loader } from "lucide-react";
 
-export default function OnboardingPage() {
-  // const { userId } = await auth();
+export default async function OnboardingPage() {
+  const { userId, sessionClaims } = await auth();
 
-  // if (!userId) redirect("/sign-in");
+  if (!userId) redirect("/sign-in");
+  const isOnboarded = (sessionClaims as ClerkUserMetadata)?.publicMetadata
+    ?.onBoarded;
 
-  // const user = await prisma.user.findUnique({
-  //   where: { clerkId: userId },
-  //   select: { onboarded: true },
-  // });
-
-  // if (user?.onboarded || !user) {
-  //   redirect("/member"); // or wq
-  // }
+  if (isOnboarded) {
+    redirect("/product");
+  }
 
   return (
     <div>

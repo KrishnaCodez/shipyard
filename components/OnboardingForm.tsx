@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AtSign, ChevronLeft, ChevronRight } from "lucide-react";
+import { AtSign, ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { redirect, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -26,6 +26,7 @@ import ImageKit from "imagekit";
 import { useAuth, useSession } from "@clerk/nextjs";
 import { prisma } from "@/lib/prisma";
 import { useState, useEffect } from "react";
+import { clerkClient } from "@clerk/nextjs/server";
 const steps = [
   {
     id: "step-1",
@@ -284,42 +285,50 @@ export default function OnboardingForm() {
     },
   });
 
-  useEffect(() => {
-    if (!isLoaded) {
-      return;
-    }
-    if (!userId || !session) {
-      router.replace("/sign-in");
-      return;
-    }
-
-    const fetchOnboardingStatus = async () => {
-      try {
-        const data = await checkOnboarding();
-        if (data.isOnboarded) {
-          setIsOnboarded(true);
-          router.replace("/product");
-        } else {
-          setIsOnboarded(false);
-        }
-      } catch (error) {
-        console.error("Error checking onboarding:", error);
-        router.replace("/onboarding");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOnboardingStatus();
-  }, [isLoaded, userId, session, router]);
-
-  if (loading || !isLoaded || isOnboarded === null) {
-    return <p>Loading...</p>;
+  if (!isLoaded) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader className="animate-spin h-5 w-5" />
+      </div>
+    );
   }
 
-  if (isOnboarded) {
-    return null;
-  }
+  // useEffect(() => {
+  //   if (!isLoaded) {
+  //     return;
+  //   }
+  //   if (!userId || !session) {
+  //     router.replace("/sign-in");
+  //     return;
+  //   }
+
+  //   const fetchOnboardingStatus = async () => {
+  //     try {
+  //       const data = await checkOnboarding();
+  //       if (data.isOnboarded) {
+  //         setIsOnboarded(true);
+  //         router.replace("/product");
+  //       } else {
+  //         setIsOnboarded(false);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking onboarding:", error);
+  //       router.replace("/onboarding");
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchOnboardingStatus();
+  // }, [isLoaded, userId, session, router]);
+
+  // if (loading || !isLoaded || isOnboarded === null) {
+  //   return <p>Loading...</p>;
+  // }
+
+  // if (isOnboarded) {
+  //   return null;
+  // }
 
   const uploadImage = async (file: File, fileName: string) => {
     console.log("Starting image upload...");
@@ -371,6 +380,16 @@ export default function OnboardingForm() {
     try {
       const response = await onBoardDetails(formData);
       if (response.error) throw new Error(response.error);
+
+      const clerk = await clerkClient();
+
+      await clerk.users.updateUserMetadata(userId || "", {
+        publicMetadata: {
+          role: "user",
+          onBoarded: true,
+        },
+      });
+
       setShowSuccess(true);
       setTimeout(() => router.push("/"), 2000);
     } catch (error) {
