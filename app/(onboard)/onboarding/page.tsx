@@ -19,15 +19,15 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { Loader } from "lucide-react";
 
 export default async function OnboardingPage() {
-  const { userId, sessionClaims } = await auth();
+  // const { userId, sessionClaims } = await auth();
 
-  if (!userId) redirect("/sign-in");
-  const isOnboarded = (sessionClaims as ClerkUserMetadata)?.publicMetadata
-    ?.onBoarded;
+  // if (!userId) redirect("/sign-in");
+  // const isOnboarded = (sessionClaims as ClerkUserMetadata)?.publicMetadata
+  //   ?.onBoarded;
 
-  if (isOnboarded) {
-    redirect("/product");
-  }
+  // if (isOnboarded) {
+  //   redirect("/product");
+  // }
 
   return (
     <div>

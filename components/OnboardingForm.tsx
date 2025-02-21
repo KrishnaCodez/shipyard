@@ -26,6 +26,8 @@ import ImageKit from "imagekit";
 import { useAuth, useSession } from "@clerk/nextjs";
 import { prisma } from "@/lib/prisma";
 import { useState, useEffect } from "react";
+import { onBoardDetails } from "@/utils/actions/onBoardDetails";
+
 const steps = [
   {
     id: "step-1",
@@ -240,7 +242,6 @@ const setUpProfile: MagicField[] = [
 ];
 
 const formSchema = z.object({
-  // Define all fields here
   university: z.string().min(2, "Please select a university"),
   department: z.string().min(2, "Please select a department"),
   degreeLevel: z.string().min(2, "Please select a degree level"),

@@ -36,8 +36,6 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@map("users")
 }
 
 model PersonalDetails {
@@ -48,7 +46,6 @@ model PersonalDetails {
   department     String
   degreeLevel    DegreeLevel
   phone          String?
-  bio            String?     @db.VarChar(200)
   profilePicture String?
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt

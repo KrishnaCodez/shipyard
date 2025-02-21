@@ -52,74 +52,7 @@ export async function removeRole(formData: FormData) {
   }
 }
 
-export async function onBoardDetails(formData: FormData) {
-  const { userId } = await auth();
-  if (!userId) return { error: "Unauthorized" };
 
-  if (!formData || typeof formData.get !== "function") {
-    return { error: "Invalid form data" };
-  }
-
-  // console.log("Form data received:", {
-  //   username: formData.get("username"),
-  //   skills: formData.getAll("skills"),
-  //   experience: formData.get("experience"),
-  //   birthday: formData.get("birthday"),
-  //   profilePhoto: formData.get("profilePhoto"),
-  // });
-
-  try {
-    const profilePhoto = formData.get("profilePhoto");
-    const degreeLevel = (formData.get("degreeLevel") as string).toUpperCase();
-    const experienceLevel = (
-      formData.get("experience") as string
-    ).toUpperCase();
-
-    const userProfile = await prisma.user.update({
-      where: {
-        clerkId: userId,
-      },
-      data: {
-        onboarded: true,
-        username: formData.get("username") as string,
-        bio: formData.get("bio") as string,
-        dob: new Date(formData.get("birthday") as string),
-        profilePictureURL: profilePhoto ? (profilePhoto as string) : "",
-        personalDetails: {
-          create: {
-            university: formData.get("university") as string,
-            department: formData.get("department") as string,
-            degreeLevel: degreeLevel as DegreeLevel,
-            phone: formData.get("phone") as string,
-            bio: formData.get("bio") as string,
-            profilePicture: formData.get("profilePhoto") as string,
-          },
-        },
-        technicalProfile: {
-          create: {
-            primarySkills: formData.getAll("skills") as string[],
-            experienceLevel: experienceLevel as ExperienceLevel,
-            githubUrl: formData.get("github") as string,
-            portfolioUrl: formData.get("portfolio") as string,
-          },
-        },
-      },
-      include: {
-        personalDetails: true,
-        technicalProfile: true,
-      },
-    });
-
-    revalidatePath("/");
-    return { success: true, data: userProfile };
-  } catch (error) {
-    console.error("Onboarding error:", error);
-    if (error instanceof Error) {
-      return { error: error.message };
-    }
-    return { error: "Failed to save onboarding details" };
-  }
-}
 
 export async function checkOnboarding() {
   const { userId } = await auth();
