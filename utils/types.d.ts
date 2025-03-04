@@ -1,16 +1,19 @@
 import NextAuth, { DefaultSession, DefaultUser } from "next-auth";
 import { string, z, ZodEnum, ZodNativeEnum, ZodNumber, ZodString } from "zod";
+import { ClerkState } from "@clerk/nextjs/server";
+import { JwtPayload } from "@clerk/nextjs/server";
 
 // Create a type for the roles
-export type Roles = "admin" | "user";
+export type Roles = "ADMIN" | "USER";
 
 declare global {
-  export interface Session {
-    role?: "admin" | "user";
-    onBoarded?: boolean;
+  interface ClerkUserMetadata extends JwtPayload {
+    publicMetadata?: {
+      onBoarded?: boolean;
+      role?: "ADMIN" | "USER";
+    };
   }
 }
-
 declare global {
   interface CustomJwtSessionClaims {
     metadata: {

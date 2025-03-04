@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { AtSign, ChevronLeft, ChevronRight } from "lucide-react";
+import { AtSign, ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { redirect, useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -11,21 +11,23 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { StepIndicator } from "@/components/StepIndicator";
-import { SuccessAnimation } from "@/components/SuccessAnimation";
-import SelectCommand from "./custom/select-command";
+import { StepIndicator } from "@/components/shared/StepIndicator";
+import { SuccessAnimation } from "@/components/shared/SuccessAnimation";
+import SelectCommand from "../custom/select-command";
 import type { MagicField } from "@/utils/types";
-import CustomDatePicker from "./custom/date-picker";
-import PhoneNumberInput from "./custom/phone-input";
-import CustomTextArea from "./custom/textarea";
-import { CustomMultiSelect } from "./custom/multiselect";
-import CustomSelect from "./custom/select";
-import CustomInput from "./custom/input";
-import { checkOnboarding, onBoardDetails } from "@/utils/actions";
+import CustomDatePicker from "../custom/date-picker";
+import PhoneNumberInput from "../custom/phone-input";
+import CustomTextArea from "../custom/textarea";
+import { CustomMultiSelect } from "../custom/multiselect";
+import CustomSelect from "../custom/select";
+import CustomInput from "../custom/input";
 import ImageKit from "imagekit";
 import { useAuth, useSession } from "@clerk/nextjs";
 import { prisma } from "@/lib/prisma";
 import { useState, useEffect } from "react";
+import { onBoardDetails } from "@/utils/actions/onBoardDetails";
+import { toast } from "sonner";
+
 const steps = [
   {
     id: "step-1",
@@ -240,18 +242,37 @@ const setUpProfile: MagicField[] = [
 ];
 
 const formSchema = z.object({
-  // Define all fields here
   university: z.string().min(2, "Please select a university"),
   department: z.string().min(2, "Please select a department"),
   degreeLevel: z.string().min(2, "Please select a degree level"),
   birthday: z.date(),
-  phone: z.string().min(10, "Number must be at least 10 characters").optional(),
-  skills: z.array(z.string()).min(1, "Select at least one skill"),
+  phone: z
+    .string()
+    .min(10, "Number must be at least 10 characters")
+    .regex(
+      /^[0-9+\-\s]+$/,
+      "Phone number can only contain numbers, +, -, and spaces"
+    )
+    .optional(),
+
+  skills: z.array(z.string()).min(3, "Select at least three skill"),
   experience: z.string().min(3, "Please select an experience level"),
   github: z.string().url("Please enter a valid URL").or(z.literal("")),
   portfolio: z.string().url("Please enter a valid URL").or(z.literal("")),
-  username: z.string().min(3, "Username must be at least 3 characters"),
-  bio: z.string().min(10).max(200).optional(),
+  username: z
+    .string()
+    .min(3, "Username must be between 3 and 15 characters")
+    .max(15, "Username must be between 3 and 15 characters")
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Username can only contain letters, numbers, and underscores"
+    ),
+
+  bio: z
+    .string()
+    .min(10, "Add atleast 10 characters")
+    .max(200, "Maximum 200 characters allowed")
+    .optional(),
   profilePhoto: z.array(z.instanceof(File)).optional(),
 });
 
@@ -266,6 +287,7 @@ export default function OnboardingForm() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -284,70 +306,88 @@ export default function OnboardingForm() {
     },
   });
 
-  useEffect(() => {
-    if (!isLoaded) {
-      return;
-    }
-    if (!userId || !session) {
-      router.replace("/sign-in");
-      return;
-    }
+  const uploadImage = async (file: File, fileName: string) => {
+    setIsUploading(true);
 
-    const fetchOnboardingStatus = async () => {
+    const imageUploadPromise = async () => {
       try {
-        const data = await checkOnboarding();
-        if (data.isOnboarded) {
-          setIsOnboarded(true);
-          router.replace("/product");
-        } else {
-          setIsOnboarded(false);
-        }
+        // Initialize ImageKit
+        const imagekit = new ImageKit({
+          publicKey: process.env.NEXT_PUBLIC_PUBLIC_KEY ?? "",
+          privateKey: process.env.NEXT_PUBLIC_PRIVATE_KEY ?? "",
+          urlEndpoint: process.env.NEXT_PUBLIC_URL_ENDPOINT ?? "",
+        });
+
+        // Convert to base64
+        const fileBase64 = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = (error) => reject(error);
+        });
+
+        // Upload to ImageKit
+        const uploadedFile = await imagekit.upload({
+          file: fileBase64,
+          fileName: fileName,
+        });
+
+        console.log("Image upload completed. URL:", uploadedFile.url);
+
+        return {
+          url: uploadedFile.url,
+          fileName: uploadedFile.name,
+        };
       } catch (error) {
-        console.error("Error checking onboarding:", error);
-        router.replace("/onboarding");
+        throw new Error(
+          error instanceof Error ? error.message : "Failed to upload image"
+        );
       } finally {
-        setLoading(false);
+        setIsUploading(false);
       }
     };
 
-    fetchOnboardingStatus();
-  }, [isLoaded, userId, session, router]);
-
-  if (loading || !isLoaded || isOnboarded === null) {
-    return <p>Loading...</p>;
-  }
-
-  if (isOnboarded) {
-    return null;
-  }
-
-  const uploadImage = async (file: File, fileName: string) => {
-    console.log("Starting image upload...");
-    const imagekit = new ImageKit({
-      publicKey: process.env.NEXT_PUBLIC_PUBLIC_KEY ?? "",
-      privateKey: process.env.NEXT_PUBLIC_PRIVATE_KEY ?? "",
-      urlEndpoint: process.env.NEXT_PUBLIC_URL_ENDPOINT ?? "",
+    return toast.promise(imageUploadPromise, {
+      loading: "Uploading your profile picture...",
+      success: (data) => {
+        return `Successfully uploaded`;
+      },
+      error: (error) => {
+        return `Upload failed: ${error.message}`;
+      },
     });
-    const fileBase64 = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = (error) => reject(error);
-    });
-    console.log("File converted to base64, uploading...");
-    const uploadedFile = await imagekit.upload({
-      file: fileBase64,
-      fileName: fileName,
-    });
-    console.log("Image upload completed. URL:", uploadedFile.url);
-    return uploadedFile.url;
   };
+
+  // useEffect(() => {
+  //   const subscription = form.watch(async (value, { name }) => {
+  //     if (name === "profilePhoto" && value.profilePhoto?.[0]) {
+  //       const file = value.profilePhoto[0];
+  //       try {
+  //         const uploadResult = await uploadImage(
+  //           file,
+  //           value.username || "profile"
+  //         );
+  //         form.setValue("profilePhoto", uploadResult.url);
+  //       } catch (error) {
+  //         form.setError("profilePhoto", {
+  //           type: "manual",
+  //           message: "Failed to upload image",
+  //         });
+  //       }
+  //     }
+  //   });
+
+  //   return () => subscription.unsubscribe();
+  // }, [form.watch]);
 
   const processForm = async (data: z.infer<typeof formSchema>) => {
     let profilePhotoUrl = "";
     if (data.profilePhoto && data.profilePhoto.length > 0) {
       const file = data.profilePhoto[0];
-      profilePhotoUrl = await uploadImage(file, data.username);
+      const uploadResult = await (
+        await uploadImage(file, data.username)
+      ).unwrap();
+      profilePhotoUrl = uploadResult.url;
     }
 
     const formData = new FormData();
@@ -371,9 +411,14 @@ export default function OnboardingForm() {
     try {
       const response = await onBoardDetails(formData);
       if (response.error) throw new Error(response.error);
+
       setShowSuccess(true);
-      setTimeout(() => router.push("/"), 2000);
+      setTimeout(() => router.push("/product"), 2000);
     } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Form submission failed"
+      );
+
       console.error("Form submission error:", error);
     }
   };
@@ -405,6 +450,14 @@ export default function OnboardingForm() {
       setStep(step - 1);
     }
   };
+
+  if (!isLoaded) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader className="animate-spin h-5 w-5" />
+      </div>
+    );
+  }
 
   if (showSuccess) {
     return (
@@ -540,8 +593,19 @@ export default function OnboardingForm() {
                         </Button>
                       )}
                       {step === steps.length - 1 && (
-                        <Button type="submit" className="ml-auto">
-                          Complete
+                        <Button
+                          type="submit"
+                          disabled={isUploading}
+                          className="ml-auto"
+                        >
+                          {isUploading ? (
+                            <>
+                              <Loader className="mr-2 h-4 w-4 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            "Complete"
+                          )}
                         </Button>
                       )}
                     </div>

@@ -1,6 +1,6 @@
 import { Webhook } from "svix";
 import { headers } from "next/headers";
-import { WebhookEvent } from "@clerk/nextjs/server";
+import { clerkClient, WebhookEvent } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
@@ -43,7 +43,6 @@ export async function POST(req: Request) {
         where: { clerkId: id },
         update: {
           image: image_url || "",
-
           email: email_addresses[0].email_address,
         },
         create: {
@@ -57,6 +56,16 @@ export async function POST(req: Request) {
           onboarded: false,
         },
       });
+
+      const clerk = await clerkClient();
+
+      await clerk.users.updateUserMetadata(id, {
+        publicMetadata: {
+          role: "USER",
+          onBoarded: false,
+        },
+      });
+
       console.log("User created/updated");
     }
 
