@@ -11,17 +11,16 @@ import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { StepIndicator } from "@/components/StepIndicator";
-import { SuccessAnimation } from "@/components/SuccessAnimation";
-import SelectCommand from "./custom/select-command";
+import { StepIndicator } from "@/components/shared/StepIndicator";
+import { SuccessAnimation } from "@/components/shared/SuccessAnimation";
+import SelectCommand from "../custom/select-command";
 import type { MagicField } from "@/utils/types";
-import CustomDatePicker from "./custom/date-picker";
-import PhoneNumberInput from "./custom/phone-input";
-import CustomTextArea from "./custom/textarea";
-import { CustomMultiSelect } from "./custom/multiselect";
-import CustomSelect from "./custom/select";
-import CustomInput from "./custom/input";
-import { checkOnboarding } from "@/utils/actions";
+import CustomDatePicker from "../custom/date-picker";
+import PhoneNumberInput from "../custom/phone-input";
+import CustomTextArea from "../custom/textarea";
+import { CustomMultiSelect } from "../custom/multiselect";
+import CustomSelect from "../custom/select";
+import CustomInput from "../custom/input";
 import ImageKit from "imagekit";
 import { useAuth, useSession } from "@clerk/nextjs";
 import { prisma } from "@/lib/prisma";
@@ -385,7 +384,9 @@ export default function OnboardingForm() {
     let profilePhotoUrl = "";
     if (data.profilePhoto && data.profilePhoto.length > 0) {
       const file = data.profilePhoto[0];
-      const uploadResult = await uploadImage(file, data.username);
+      const uploadResult = await (
+        await uploadImage(file, data.username)
+      ).unwrap();
       profilePhotoUrl = uploadResult.url;
     }
 
