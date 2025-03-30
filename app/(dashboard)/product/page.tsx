@@ -1,19 +1,28 @@
 import { checkOnboardingStatus } from "@/lib/auth";
 import { SessionSync } from "@/components/SessionSync";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { Clock, InfoIcon, CloudLightningIcon as LightningBolt, Search } from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { getCategories, getProducts, getStatistics } from '@/utils/actions/productDetails'
+import {
+  Clock,
+  InfoIcon,
+  CloudLightningIcon as LightningBolt,
+  Search,
+} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  getCategories,
+  getProducts,
+  getStatistics,
+} from "@/utils/actions/productDetails";
 import ProductCard from "@/components/products/ProductCards";
 
 export default async function Dashboard() {
   // const { isOnboarded, redirect } = await checkOnboardingStatus();
   const { userId, sessionClaims } = await auth();
-  const products = await getProducts()
-  const categories = await getCategories()
-  const statistics = await getStatistics()
+  const products = await getProducts();
+  const categories = await getCategories();
+  const statistics = await getStatistics();
   // const user = await currentUser();
   // console.log("User Role:", sessionClaims?.role);
   // console.log("User Session Data:", sessionClaims);
@@ -34,7 +43,7 @@ export default async function Dashboard() {
 
   return (
     <>
-      <div className="container py-6">
+      <div className="container py-6 px-4">
         <div className="flex flex-col md:flex-row gap-4 items-start">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-4">
