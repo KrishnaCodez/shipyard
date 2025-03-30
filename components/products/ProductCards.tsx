@@ -1,29 +1,44 @@
 "use client";
 
-import type React from "react";
-
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronUp } from "lucide-react";
+import { ChevronUp, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { upvoteProduct } from "@/utils/actions/productDetails";
 import { toast } from "sonner";
+import ProductDrawer from "./ProductDrawer";
 
 interface ProductCardProps {
   product: any;
+  currentUserId?: string | null;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  currentUserId,
+}: ProductCardProps) {
   const [upvotes, setUpvotes] = useState(product.upvotes?.length || 0);
-  const [isUpvoted, setIsUpvoted] = useState(false);
+  const [isUpvoted, setIsUpvoted] = useState(
+    product.upvotes?.some((upvote: any) => upvote.userId === currentUserId) ||
+      false
+  );
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const handleUpvote = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (isUpvoted) return;
+    if (!currentUserId) {
+      toast.error("Please sign in to upvote");
+      return;
+    }
+
+    if (isUpvoted) {
+      toast.info("You've already upvoted this product");
+      return;
+    }
 
     try {
       setUpvotes(upvotes + 1);
@@ -42,9 +57,24 @@ export default function ProductCard({ product }: ProductCardProps) {
     }
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent if clicking on the upvote button or the link
+    if (
+      (e.target as HTMLElement).closest(".upvote-button") ||
+      (e.target as HTMLElement).closest(".product-link")
+    ) {
+      return;
+    }
+    e.preventDefault();
+    setIsDrawerOpen(true);
+  };
+
   return (
-    <Link href={`/products/${product.slug}`}>
-      <div className="flex items-center gap-4 p-4 border rounded-lg hover:shadow-sm transition-shadow cursor-pointer">
+    <>
+      <div
+        className="flex items-center gap-4 p-4 border rounded-lg hover:shadow-sm transition-shadow cursor-pointer"
+        onClick={handleCardClick}
+      >
         <div className="flex-shrink-0 w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
           {product.logo ? (
             <Image
@@ -70,7 +100,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               </Badge>
             )}
             {product.status === "PENDING" && (
-              <Badge variant="default" className="text-xs">
+              <Badge variant="outline" className="text-xs">
                 Pending
               </Badge>
             )}
@@ -80,22 +110,39 @@ export default function ProductCard({ product }: ProductCardProps) {
           </p>
         </div>
 
-        <div
-          className="flex flex-col items-center gap-1"
-          onClick={handleUpvote}
-        >
-          <Button
-            variant="ghost"
-            size="sm"
-            className={`p-0 h-8 w-8 rounded-full ${
-              isUpvoted ? "text-orange-500" : ""
-            }`}
+        <div className="flex items-center gap-2">
+          <div
+            className="flex flex-col items-center gap-1 upvote-button"
+            onClick={handleUpvote}
           >
-            <ChevronUp className="h-5 w-5" />
-          </Button>
-          <span className="text-sm font-medium">{upvotes}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`p-0 h-8 w-8 rounded-full ${
+                isUpvoted ? "text-orange-500" : ""
+              }`}
+            >
+              <ChevronUp className="h-5 w-5" />
+            </Button>
+            <span className="text-sm font-medium">{upvotes}</span>
+          </div>
+
+          <Link
+            href={`/products/${product.slug}`}
+            className="product-link p-2 text-muted-foreground hover:text-foreground transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ArrowUpRight className="h-5 w-5" />
+          </Link>
         </div>
       </div>
-    </Link>
+
+      <ProductDrawer
+        product={product}
+        isOpen={isDrawerOpen}
+        setIsOpen={setIsDrawerOpen}
+        currentUserId={currentUserId}
+      />
+    </>
   );
 }

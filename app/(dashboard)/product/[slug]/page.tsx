@@ -1,19 +1,28 @@
 import { getProductBySlug } from "@/utils/actions/productDetails";
-import ProductDetail from "@/components/products/ProductDetails";
+import { auth } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
+import ProductDetails from "@/components/products/ProductDetails";
 
-interface ProductPageProps {
-  params: {
-    slug: string;
-  };
-}
+export default async function ProductPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  try {
+    const { userId } = await auth();
+    const product = await getProductBySlug(params.slug);
 
-export default async function ProductPage({ params }: ProductPageProps) {
-  const product = await getProductBySlug(params.slug);
+    if (!product) {
+      return notFound();
+    }
 
-  if (!product) {
-    notFound();
+    return (
+      <div className="min-h-screen bg-background">
+        <ProductDetails product={product} currentUserId={userId} />
+      </div>
+    );
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return notFound();
   }
-
-  return <ProductDetail product={product} />;
 }

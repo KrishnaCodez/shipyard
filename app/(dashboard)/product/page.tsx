@@ -26,8 +26,11 @@ export default async function Dashboard() {
   // const user = await currentUser();
   // console.log("User Role:", sessionClaims?.role);
   // console.log("User Session Data:", sessionClaims);
-  const onboardingStatus = (sessionClaims as ClerkUserMetadata)?.publicMetadata
-    ?.onBoarded;
+  const onboardingStatus = (sessionClaims as any)?.publicMetadata?.onBoarded;
+
+  // Default values for missing statistics
+  const visits = 0;
+  const pageViews = 0;
 
   // console.log("User Onboarding Status:", onboardingStatus);
   // console.log("Full Session Claims:", sessionClaims);
@@ -126,7 +129,11 @@ export default async function Dashboard() {
               <TabsContent value="daily" className="m-0">
                 <div className="space-y-4">
                   {products.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard
+                      key={product.id}
+                      product={product}
+                      currentUserId={userId}
+                    />
                   ))}
                 </div>
               </TabsContent>
@@ -163,17 +170,15 @@ export default async function Dashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-amber-50 rounded-lg p-4">
                   <div className="text-2xl font-bold">
-                    {statistics.visits.toLocaleString()}
+                    {statistics.totalProducts.toLocaleString()}
                   </div>
-                  <div className="text-sm text-muted-foreground">Visits</div>
+                  <div className="text-sm text-muted-foreground">Products</div>
                 </div>
                 <div className="bg-amber-50 rounded-lg p-4">
                   <div className="text-2xl font-bold">
-                    {statistics.pageViews.toLocaleString()}
+                    {statistics.totalUpvotes.toLocaleString()}
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Page views
-                  </div>
+                  <div className="text-sm text-muted-foreground">Upvotes</div>
                 </div>
               </div>
             </div>
