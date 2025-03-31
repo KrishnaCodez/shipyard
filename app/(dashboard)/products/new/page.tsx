@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 
 export default async function AddProductPage() {
   const { userId } = await auth();
-  
+
   // Redirect if not logged in
   if (!userId) {
     redirect("/sign-in");

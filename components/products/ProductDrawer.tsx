@@ -102,7 +102,7 @@ export default function ProductDrawer({
               </div>
             </div>
             <Link
-              href={`/products/${product.slug}`}
+              href={`/products/${product.id}`}
               className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <ArrowUpRight className="h-6 w-6" />

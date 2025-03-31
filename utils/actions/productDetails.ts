@@ -260,3 +260,51 @@ export async function getStatistics() {
     };
   }
 }
+
+export async function getProductById(id: string) {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        user: {
+          select: {
+            id: true,
+            image: true,
+            firstName: true,
+            lastName: true,
+            username: true,
+            email: true,
+          },
+        },
+        categories: true,
+        upvotes: {
+          select: {
+            id: true,
+            userId: true,
+          },
+        },
+        comments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                image: true,
+                firstName: true,
+                lastName: true,
+                username: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+      },
+    });
+
+    return product;
+  } catch (error) {
+    console.log("Error fetching product by ID:", error);
+    throw error;
+  }
+}

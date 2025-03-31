@@ -125,7 +125,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           </div>
 
           <Link
-            href={`/products/${product.slug}`}
+            href={`/products/${product.id}`}
             className="product-link p-2 text-muted-foreground hover:text-foreground transition-colors"
             onClick={(e) => e.stopPropagation()}
           >

@@ -413,7 +413,7 @@ export default function OnboardingForm() {
       if (response.error) throw new Error(response.error);
 
       setShowSuccess(true);
-      setTimeout(() => router.push("/product"), 2000);
+      setTimeout(() => router.push("/products"), 2000);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Form submission failed"
