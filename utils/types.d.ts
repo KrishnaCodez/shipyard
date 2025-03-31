@@ -2,6 +2,7 @@ import NextAuth, { DefaultSession, DefaultUser } from "next-auth";
 import { string, z, ZodEnum, ZodNativeEnum, ZodNumber, ZodString } from "zod";
 import { ClerkState } from "@clerk/nextjs/server";
 import { JwtPayload } from "@clerk/nextjs/server";
+import { ArrayToZodResolver } from "@hookform/resolvers/zod";
 
 // Create a type for the roles
 export type Roles = "ADMIN" | "USER";
@@ -166,3 +167,17 @@ export type RenderComponent =
   | TextAreaFieldRenderComponent;
 
 export type optionType = { value: string; label: string | ReactNode };
+
+export type FormSchema = z.infer<ReturnType<typeof ArrayToZodResolver>>;
+
+export interface ProductFormValues {
+  name: string;
+  headline: string;
+  description: string;
+  website: string;
+  twitter: string;
+  discord: string;
+  logo: File | null;
+  categories: string[];
+  releaseDate: string;
+}

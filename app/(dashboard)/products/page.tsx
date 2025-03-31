@@ -1,24 +1,44 @@
 import { checkOnboardingStatus } from "@/lib/auth";
 import { SessionSync } from "@/components/SessionSync";
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { Clock, InfoIcon, CloudLightningIcon as LightningBolt, Search } from "lucide-react"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
-import { getCategories, getProducts, getStatistics } from '@/utils/actions/productDetails'
+import {
+  Clock,
+  InfoIcon,
+  CloudLightningIcon as LightningBolt,
+  Search,
+  Plus,
+} from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  getCategories,
+  getProducts,
+  getStatistics,
+} from "@/utils/actions/productDetails";
 import ProductCard from "@/components/products/ProductCards";
+import Link from "next/link";
 
 export default async function Dashboard() {
   // const { isOnboarded, redirect } = await checkOnboardingStatus();
   const { userId, sessionClaims } = await auth();
-  const products = await getProducts()
-  const categories = await getCategories()
-  const statistics = await getStatistics()
+  const products = await getProducts();
+  const categories = await getCategories();
+  const statistics = (await getStatistics()) || {
+    totalProducts: 0,
+    totalUpvotes: 0,
+    totalComments: 0,
+    topProducts: [],
+    recentActivity: [],
+  };
   // const user = await currentUser();
   // console.log("User Role:", sessionClaims?.role);
   // console.log("User Session Data:", sessionClaims);
-  const onboardingStatus = (sessionClaims as ClerkUserMetadata)?.publicMetadata
-    ?.onBoarded;
+  const onboardingStatus = (sessionClaims as any)?.publicMetadata?.onBoarded;
+
+  // Default values for missing statistics
+  const visits = 0;
+  const pageViews = 0;
 
   // console.log("User Onboarding Status:", onboardingStatus);
   // console.log("Full Session Claims:", sessionClaims);
@@ -34,21 +54,32 @@ export default async function Dashboard() {
 
   return (
     <>
-      <div className="container py-6">
+      <div className="container py-6 px-4">
         <div className="flex flex-col md:flex-row gap-4 items-start">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-4">
-              <LightningBolt className="h-8 w-8 text-orange-500" />
+              <LightningBolt className="h-8 w-8 text-blue-500" />
               <h1 className="text-3xl font-bold">
                 A launch platform for your products.
               </h1>
             </div>
 
-            <div className="relative mb-8">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search a product" className="pl-10 pr-16" />
-              <div className="absolute right-3 top-3 text-xs text-muted-foreground">
-                Ctrl K
+            <div className="relative  mb-8">
+              <div className=" flex  gap-2">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input placeholder="Search a product" className="pl-10 pr-16" />
+                {/* <div className="absolute right-3 top-3 text-xs text-muted-foreground">
+                  Ctrl K
+                </div> */}
+
+                <div className="flex justify-between items-center mb-8">
+                  <Link href="/products/new">
+                    <Button className="gap-2">
+                      <Plus className="h-4 w-4" />
+                      New Product
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
 
@@ -58,40 +89,40 @@ export default async function Dashboard() {
               <TabsList className="bg-transparent p-0 h-auto mb-6">
                 <TabsTrigger
                   value="daily"
-                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:rounded-none px-4 py-2"
+                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none px-4 py-2"
                 >
                   Daily
                 </TabsTrigger>
                 <TabsTrigger
                   value="weekly"
-                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:rounded-none px-4 py-2"
+                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none px-4 py-2"
                 >
                   Weekly
                 </TabsTrigger>
                 <TabsTrigger
                   value="monthly"
-                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:rounded-none px-4 py-2"
+                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none px-4 py-2"
                 >
                   Monthly
                 </TabsTrigger>
                 <TabsTrigger
                   value="yearly"
-                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-orange-500 data-[state=active]:rounded-none px-4 py-2"
+                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-blue-500 data-[state=active]:rounded-none px-4 py-2"
                 >
                   Yearly
                 </TabsTrigger>
               </TabsList>
 
-              <div className="flex justify-between items-center mb-4">
+              {/* <div className="flex justify-between items-center mb-4">
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-medium">New launches in</h3>
-                  <div className="bg-amber-50 text-amber-800 px-3 py-1 rounded-md text-sm">
+                  <div className="bg-blue-50 text-blue-800 px-3 py-1 rounded-md text-sm">
                     22 hours
                   </div>
-                  <div className="bg-amber-50 text-amber-800 px-3 py-1 rounded-md text-sm">
+                  <div className="bg-blue-50 text-blue-800 px-3 py-1 rounded-md text-sm">
                     7 mins
                   </div>
-                  <div className="bg-amber-50 text-amber-800 px-3 py-1 rounded-md text-sm">
+                  <div className="bg-blue-50 text-blue-800 px-3 py-1 rounded-md text-sm">
                     40 secs
                   </div>
                 </div>
@@ -99,15 +130,15 @@ export default async function Dashboard() {
                   <Clock className="h-4 w-4" />
                   Archives
                 </Button>
-              </div>
+              </div> */}
 
-              <div className="bg-amber-50 p-4 rounded-lg mb-6">
-                <p className="text-amber-800">
+              <div className="bg-blue-50 p-4 rounded-lg mb-6">
+                <p className="text-blue-800">
                   Top 3 daily products win badges. Weekly, Monthly and Yearly
                   winners win badges and are featured in our newsletter.
                   <Button
                     variant="link"
-                    className="p-0 h-auto text-amber-800 font-medium"
+                    className="p-0 h-auto text-blue-800 font-medium"
                   >
                     More details
                   </Button>
@@ -115,10 +146,24 @@ export default async function Dashboard() {
               </div>
 
               <TabsContent value="daily" className="m-0">
-                <div className="space-y-4">
-                  {products.map((product) => (
-                    <ProductCard key={product.id} product={product} />
-                  ))}
+                <div className="space-y-4 mt-4">
+                  {products && products.length > 0 ? (
+                    products.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-60 border rounded-lg p-8 text-center">
+                      <p className="text-muted-foreground mb-4">
+                        No products found
+                      </p>
+                      <Link href="/products/new">
+                        <Button className="gap-2">
+                          <Plus className="h-4 w-4" />
+                          Create Your First Product
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
               <TabsContent value="weekly" className="m-0">
@@ -152,19 +197,17 @@ export default async function Dashboard() {
                 <InfoIcon className="h-4 w-4 text-muted-foreground" />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-amber-50 rounded-lg p-4">
+                <div className="bg-blue-50 rounded-lg p-4">
                   <div className="text-2xl font-bold">
-                    {statistics.visits.toLocaleString()}
+                    {statistics.totalProducts.toLocaleString()}
                   </div>
-                  <div className="text-sm text-muted-foreground">Visits</div>
+                  <div className="text-sm text-muted-foreground">Products</div>
                 </div>
-                <div className="bg-amber-50 rounded-lg p-4">
+                <div className="bg-blue-50 rounded-lg p-4">
                   <div className="text-2xl font-bold">
-                    {statistics.pageViews.toLocaleString()}
+                    {statistics.totalUpvotes.toLocaleString()}
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    Page views
-                  </div>
+                  <div className="text-sm text-muted-foreground">Upvotes</div>
                 </div>
               </div>
             </div>
@@ -299,62 +342,6 @@ export default async function Dashboard() {
                     <span className="text-sm">{category.name}</span>
                   </div>
                 ))}
-              </div>
-            </div>
-
-            <div className="border rounded-lg p-4">
-              <h3 className="font-medium mb-4">OUR SPONSORS</h3>
-              <div className="space-y-4">
-                <div className="p-4 border rounded-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="bg-black rounded-md p-2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z" />
-                      </svg>
-                    </div>
-                    <div className="font-medium">Comp AI</div>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Open Source Compliance. Get SOC 2, ISO 27001 and GDPR
-                    compliant in weeks, not months.
-                  </p>
-                </div>
-                <div className="p-4 border rounded-lg">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="bg-blue-900 rounded-md p-2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="white"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-                        <polyline points="3.29 7 12 12 20.71 7" />
-                        <line x1="12" x2="12" y1="22" y2="12" />
-                      </svg>
-                    </div>
-                    <div className="font-medium">Intercom for Startups</div>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    Startups receive a 90% discount on Intercom's AI-powered
-                    first customer service platform
-                  </p>
-                </div>
               </div>
             </div>
 

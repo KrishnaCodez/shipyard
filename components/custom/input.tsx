@@ -44,7 +44,7 @@ const CustomInput = (props: InputFieldProps) => {
                 )}
                 placeholder={props.placeholder}
                 type={props.type}
-                value={props.type === "file" ? undefined : value ?? ""}
+                value={props.type === "file" ? undefined : (value ?? "")}
                 onClick={props.onClick}
                 onChange={(e) => {
                   props.onChange?.(e);
