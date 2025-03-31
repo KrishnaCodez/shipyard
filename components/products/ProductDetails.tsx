@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@clerk/nextjs";
 import {
   Calendar,
   Globe,
@@ -25,22 +26,18 @@ import { upvoteProduct } from "@/utils/actions/productDetails";
 
 interface ProductDetailsProps {
   product: any;
-  currentUserId?: string | null;
 }
 
-export default function ProductDetails({
-  product,
-  currentUserId,
-}: ProductDetailsProps) {
+export default function ProductDetails({ product }: ProductDetailsProps) {
+  const { userId } = useAuth();
   const [upvotes, setUpvotes] = useState(product.upvotes?.length || 0);
   const [isUpvoted, setIsUpvoted] = useState(
-    product.upvotes?.some((upvote: any) => upvote.userId === currentUserId) ||
-      false
+    product.upvotes?.some((upvote: any) => upvote.userId === userId) || false
   );
   const [isUpvoting, setIsUpvoting] = useState(false);
 
   const handleUpvote = async () => {
-    if (!currentUserId) {
+    if (!userId) {
       toast.error("Please sign in to upvote");
       return;
     }

@@ -22,7 +22,13 @@ export default async function Dashboard() {
   const { userId, sessionClaims } = await auth();
   const products = await getProducts();
   const categories = await getCategories();
-  const statistics = await getStatistics();
+  const statistics = (await getStatistics()) || {
+    totalProducts: 0,
+    totalUpvotes: 0,
+    totalComments: 0,
+    topProducts: [],
+    recentActivity: [],
+  };
   // const user = await currentUser();
   // console.log("User Role:", sessionClaims?.role);
   // console.log("User Session Data:", sessionClaims);
@@ -127,14 +133,18 @@ export default async function Dashboard() {
               </div>
 
               <TabsContent value="daily" className="m-0">
-                <div className="space-y-4">
-                  {products.map((product) => (
-                    <ProductCard
-                      key={product.id}
-                      product={product}
-                      currentUserId={userId}
-                    />
-                  ))}
+                <div className="space-y-4 mt-4">
+                  {products && products.length > 0 ? (
+                    products.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))
+                  ) : (
+                    <div className="flex items-center justify-center h-40 border rounded-lg">
+                      <p className="text-muted-foreground">
+                        No products to show
+                      </p>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
               <TabsContent value="weekly" className="m-0">

@@ -42,6 +42,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { submitProduct } from "@/utils/actions/submitProduct";
+import { getCategories } from "@/utils/actions/categoryActions";
 import { Badge } from "@/components/ui/badge";
 
 // Define form schema
@@ -100,19 +101,16 @@ export default function ProductForm() {
     { id: "3", name: "Marketing" },
     { id: "4", name: "Business" },
     { id: "5", name: "Personal Life" },
-    { id: "6", name: "For Sale" },
   ]);
   const router = useRouter();
 
-  // Fetch categories from the database when component loads
+  // Fetch categories using server action
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const response = await fetch("/api/categories");
-        const data = await response.json();
-
-        if (data.categories?.length > 0) {
-          setAvailableCategories(data.categories);
+        const result = await getCategories();
+        if (result.categories?.length > 0) {
+          setAvailableCategories(result.categories);
         }
       } catch (error) {
         console.error("Failed to fetch categories:", error);

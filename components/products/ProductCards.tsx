@@ -9,20 +9,17 @@ import { Button } from "@/components/ui/button";
 import { upvoteProduct } from "@/utils/actions/productDetails";
 import { toast } from "sonner";
 import ProductDrawer from "./ProductDrawer";
+import { useAuth } from "@clerk/nextjs";
 
 interface ProductCardProps {
   product: any;
-  currentUserId?: string | null;
 }
 
-export default function ProductCard({
-  product,
-  currentUserId,
-}: ProductCardProps) {
+export default function ProductCard({ product }: ProductCardProps) {
+  const { userId } = useAuth();
   const [upvotes, setUpvotes] = useState(product.upvotes?.length || 0);
   const [isUpvoted, setIsUpvoted] = useState(
-    product.upvotes?.some((upvote: any) => upvote.userId === currentUserId) ||
-      false
+    product.upvotes?.some((upvote: any) => upvote.userId === userId) || false
   );
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -30,7 +27,7 @@ export default function ProductCard({
     e.preventDefault();
     e.stopPropagation();
 
-    if (!currentUserId) {
+    if (!userId) {
       toast.error("Please sign in to upvote");
       return;
     }
@@ -141,7 +138,6 @@ export default function ProductCard({
         product={product}
         isOpen={isDrawerOpen}
         setIsOpen={setIsDrawerOpen}
-        currentUserId={currentUserId}
       />
     </>
   );

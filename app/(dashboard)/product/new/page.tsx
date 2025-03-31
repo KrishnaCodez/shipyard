@@ -1,26 +1,17 @@
+import ProductForm from "@/components/products/AddProducts";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import ProductForm from "@/components/products/AddProducts";
 
-export default async function NewProductPage() {
+export default async function AddProductPage() {
   const { userId } = await auth();
-
+  
+  // Redirect if not logged in
   if (!userId) {
     redirect("/sign-in");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { clerkId: userId },
-    select: { onboarded: true },
-  });
-
-  if (!user?.onboarded) {
-    redirect("/onboarding");
-  }
-
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto">
       <ProductForm />
     </div>
   );

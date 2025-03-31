@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@clerk/nextjs";
 import {
   Calendar,
   Globe,
@@ -30,24 +31,22 @@ interface ProductDrawerProps {
   product: any;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  currentUserId?: string | null;
 }
 
 export default function ProductDrawer({
   product,
   isOpen,
   setIsOpen,
-  currentUserId,
 }: ProductDrawerProps) {
+  const { userId } = useAuth();
   const [upvotes, setUpvotes] = useState(product.upvotes?.length || 0);
   const [isUpvoted, setIsUpvoted] = useState(
-    product.upvotes?.some((upvote: any) => upvote.userId === currentUserId) ||
-      false
+    product.upvotes?.some((upvote: any) => upvote.userId === userId) || false
   );
   const [isUpvoting, setIsUpvoting] = useState(false);
 
   const handleUpvote = async () => {
-    if (!currentUserId) {
+    if (!userId) {
       toast.error("Please sign in to upvote");
       return;
     }
