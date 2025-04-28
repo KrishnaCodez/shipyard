@@ -11,7 +11,7 @@ export default async function OnboardingPage() {
     ?.onBoarded;
 
   if (isOnboarded) {
-    redirect("/product");
+    redirect("/products");
   }
 
   return (
