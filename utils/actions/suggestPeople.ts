@@ -100,24 +100,33 @@ export async function suggestPeople(userQuery: string) {
       6. Return a JavaScript code snippet that would be executed with prisma client
       7. Do NOT use $queryRaw or $queryRawUnsafe - use Prisma's type-safe query methods
       
-      IMPORTANT: For technology and skill searches, generate multiple variants to find more results:
-      - When searching for technologies, use hasSome with an array of variations
-      - For example, searching for "react" should look for ["react", "reactjs", "react.js"]
-      - For a technology like "next", use ["next", "next.js", "nextjs"]
-      - For "python", consider ["python", "python3", "py"]
-      
-      IMPORTANT: For array fields like primarySkills, interests, or preferredRoles:
-      - Use 'has' operator like: primarySkills: { has: "javascript" }
-      - Or preferably use array operations like: primarySkills: { hasSome: ["react", "reactjs", "react.js"] }
-      - Do NOT use 'some' with 'contains' for array fields as it's not valid Prisma syntax
-      
-      IMPORTANT: Return ONLY valid Prisma client JavaScript code that can be directly evaluated, like:
-      prisma.user.findMany({
-        where: {...},
-        include: {...},
-        take: 10
-      })
-      `,
+      IMPORTANT SEARCH BEST PRACTICES:
+      1. For technical skills, always expand searches to include related technologies:
+         - For "web development": include ["React", "JavaScript", "HTML", "CSS", "Angular", "Vue"]
+         - For "mobile": include ["React Native", "Flutter", "Swift", "Kotlin", "Android", "iOS"]
+         - For "AI": include ["Machine Learning", "TensorFlow", "PyTorch", "Deep Learning"]
+
+      2. Always use substring matching for role-based searches:
+         - When searching for "developer", match "Full Stack Developer", "Frontend Developer", etc.
+         - Use contains() operator for substring matching on string fields
+         - For array fields with exact values, use case variants and similar concepts
+
+      3. When possible, search across multiple fields:
+         - Check primarySkills, preferredRoles, AND interests
+         - Use separate OR clauses for each match type
+         - Look for both exact and partial matches in role fields
+
+      4. For specific technologies like "React":
+         - Include variations: ["React", "react", "ReactJS", "React.js"]
+         - Include parent categories: ["Web Development", "Frontend"]
+         - Include related technologies: ["JavaScript", "TypeScript", "NextJS"]
+
+      5. For broader terms like "web":
+         - Check if the term exists as substring in roles: preferredRoles: { hasSome: [...] }
+         - Create an OR clause for substring search: { preferredRoles: { some: { contains: "web" } } }
+         - Check interests for related concepts: { interests: { hasSome: ["Web Development", "Frontend"] } }
+
+      ALWAYS include all these search approaches for maximum relevance.`,
       messages: [
         {
           role: "user",
