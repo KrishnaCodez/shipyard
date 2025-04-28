@@ -33,6 +33,7 @@ model User {
   upvotes       Upvote[]
   products      Product[]
   comments      Comment[]
+  isDemo        Boolean        @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

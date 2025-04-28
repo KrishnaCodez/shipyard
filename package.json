@@ -6,12 +6,15 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed:mock-users": "node scripts/seed-mock-users.js",
+    "cleanup:mock-users": "node scripts/seed-mock-users.js --cleanup"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.2.13",
     "@clerk/elements": "^0.22.15",
     "@clerk/nextjs": "^6.10.2",
+    "@faker-js/faker": "^9.7.0",
     "@hookform/resolvers": "^3.10.0",
     "@prisma/client": "^6.2.1",
     "@radix-ui/react-accordion": "^1.2.8",
@@ -65,6 +68,7 @@
     "eslint-config-next": "15.1.6",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }
