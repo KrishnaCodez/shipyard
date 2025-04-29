@@ -12,6 +12,7 @@ import {
   Send,
   ChevronRight,
   Code,
+  ArrowLeft,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -27,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { useAutoResizeTextarea } from "@/hooks/use-auto-resize-textarea";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 
 interface ChatMessage {
   id: string;
@@ -261,6 +263,14 @@ export default function StudentSearch() {
               <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
                 {hasResults ? (
                   <>
+                    <Link
+                      href="/products"
+                      className="hover:underline px-4 flex text-sm gap-2 justify-center items-center font-light"
+                      // variant={"ghost"}
+                    >
+                      <ArrowLeft />
+                      Go back
+                    </Link>
                     <span>Students</span>
                     <Badge variant="outline" className="rounded-full">
                       {selectedMessageData.results.length}

@@ -1,5 +1,7 @@
 import StudentSearch from "@/components/students/StudentSearch";
+import { Button } from "@/components/ui/button";
 import React from "react";
+import { ArrowLeft } from "lucide-react";
 
 const Page = () => {
   return (

@@ -91,42 +91,45 @@ export async function suggestPeople(userQuery: string) {
         linkedinUrl      String?
       }
       
-      Your task is to generate Prisma client code that:
-      1. Always use the prisma client correctly with proper syntax
-      2. Limit results to 10 users unless specified otherwise
-      3. Return complete user objects with related data
-      4. For array fields, use 'has' for single item checks or 'hasSome' for multiple items
-      5. For text searches on normal fields, use 'contains' for case-insensitive searches
-      6. Return a JavaScript code snippet that would be executed with prisma client
-      7. Do NOT use $queryRaw or $queryRawUnsafe - use Prisma's type-safe query methods
+      IMPORTANT: The database stores skills with specific technology names, not generic categories.
       
-      IMPORTANT SEARCH BEST PRACTICES:
-      1. For technical skills, always expand searches to include related technologies:
-         - For "web development": include ["React", "JavaScript", "HTML", "CSS", "Angular", "Vue"]
-         - For "mobile": include ["React Native", "Flutter", "Swift", "Kotlin", "Android", "iOS"]
-         - For "AI": include ["Machine Learning", "TensorFlow", "PyTorch", "Deep Learning"]
-
-      2. Always use substring matching for role-based searches:
-         - When searching for "developer", match "Full Stack Developer", "Frontend Developer", etc.
-         - Use contains() operator for substring matching on string fields
-         - For array fields with exact values, use case variants and similar concepts
-
-      3. When possible, search across multiple fields:
-         - Check primarySkills, preferredRoles, AND interests
-         - Use separate OR clauses for each match type
-         - Look for both exact and partial matches in role fields
-
-      4. For specific technologies like "React":
-         - Include variations: ["React", "react", "ReactJS", "React.js"]
-         - Include parent categories: ["Web Development", "Frontend"]
-         - Include related technologies: ["JavaScript", "TypeScript", "NextJS"]
-
-      5. For broader terms like "web":
-         - Check if the term exists as substring in roles: preferredRoles: { hasSome: [...] }
-         - Create an OR clause for substring search: { preferredRoles: { some: { contains: "web" } } }
-         - Check interests for related concepts: { interests: { hasSome: ["Web Development", "Frontend"] } }
-
-      ALWAYS include all these search approaches for maximum relevance.`,
+      TECHNOLOGY MAPPINGS:
+      - For "web development" or "web developers", search for: ["React", "JavaScript", "TypeScript", "HTML", "CSS", "Angular", "Vue", "Next.js", "Node.js"]
+      - For "mobile development", search for: ["React Native", "Flutter", "Swift", "Kotlin", "Android", "iOS"]
+      - For "data science", search for: ["Python", "R", "SQL", "TensorFlow", "PyTorch", "Pandas", "NumPy"]
+      - For "cloud", search for: ["AWS", "Azure", "GCP", "Docker", "Kubernetes"]
+      - For "backend", search for: ["Node.js", "Java", "Python", "C#", "Go", "Ruby", "PHP", "Express"]
+      - For "frontend", search for: ["React", "JavaScript", "TypeScript", "HTML", "CSS", "Angular", "Vue"]
+      
+      Your task is to create a query that:
+      1. Maps general categories to specific technologies
+      2. Includes BOTH capitalized and lowercase versions of technologies
+      3. Always searches for specific technologies, not generic terms
+      4. Limit results to 10 users
+      5. Include personalDetails and technicalProfile in the results
+      
+      For experience levels:
+      - "experienced" or "with experience" should filter for INTERMEDIATE or ADVANCED
+      - "beginners" should filter for BEGINNER
+      
+      Return only a valid Prisma query like:
+      prisma.user.findMany({
+        where: {
+          technicalProfile: {
+            primarySkills: {
+              hasSome: ["React", "react", "JavaScript", "javascript", "TypeScript", "typescript"]
+            },
+            experienceLevel: {
+              in: ["INTERMEDIATE", "ADVANCED"]
+            }
+          }
+        },
+        include: {
+          personalDetails: true,
+          technicalProfile: true
+        },
+        take: 10
+      })`,
       messages: [
         {
           role: "user",
